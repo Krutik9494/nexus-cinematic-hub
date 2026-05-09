@@ -1,17 +1,17 @@
 import { useEffect, useRef, useState } from "react";
-import blackhole from "@/assets/scene-blackhole.mp4.asset.json";
-import explosion from "@/assets/scene-explosion.mp4.asset.json";
-import hero from "@/assets/scene-hero.mp4.asset.json";
-import battle from "@/assets/scene-battle.mp4.asset.json";
-import city from "@/assets/scene-city.mp4.asset.json";
+import blackhole from "@/assets/clip-blackhole.mp4";
+import battle from "@/assets/clip-battle.mp4";
+import battlesDemo from "@/assets/clip-battles-demo.mp4";
+import flyingCars from "@/assets/clip-flying-cars.mp4";
+import movieDemo from "@/assets/clip-movie-demo.mp4";
 
 /**
- * Queue of 5 cinematic clips that auto-advance with smooth crossfade
- * transitions in the hero section background.
+ * Looping cinematic background built from user-supplied clips.
+ * Each clip plays for ~8.5s, then crossfades to the next, looping forever.
  */
-const CLIPS = [blackhole.url, explosion.url, hero.url, battle.url, city.url];
-const CLIP_DURATION = 8500; // ms per clip before crossfading to next
-const FADE_MS = 1400;
+const CLIPS = [blackhole, battle, flyingCars, battlesDemo, movieDemo];
+const CLIP_DURATION = 8500;
+const FADE_MS = 1200;
 
 export function HeroCinematic() {
   const [active, setActive] = useState(0);
@@ -29,8 +29,6 @@ export function HeroCinematic() {
     return () => clearInterval(id);
   }, []);
 
-  // Restart the active clip from 0 whenever it becomes active so each
-  // segment plays from the beginning.
   useEffect(() => {
     const v = refs.current[active];
     if (v) {
