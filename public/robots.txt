@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /login
+Disallow: /settings
+Disallow: /profile
+Disallow: /watchlist
+
+Sitemap: /sitemap.xml

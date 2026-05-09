@@ -1,0 +1,184 @@
+import { useEffect, useRef, useState } from "react";
+import { Sparkles, Send, X, Bot } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { useMutation } from "@tanstack/react-query";
+import type { Movie } from "@/lib/movies";
+import { tmdbSearch } from "@/lib/tmdb.functions";
+import { useTmdbKey } from "@/lib/tmdb-key";
+import { aiChat } from "@/lib/ai.functions";
+import { MovieModal } from "./MovieModal";
+
+type Msg = { role: "user" | "ai"; text: string; movies?: Movie[] };
+
+const SUGGESTIONS = [
+  "Mood-based recs",
+  "Bollywood action",
+  "Mind-bending sci-fi",
+  "Like Oppenheimer",
+];
+
+const OFFTOPIC_REPLY = "I'm sorry, I can only help with movie recommendations and cinema-related questions.";
+const CINEMA_HINT = /\b(movie|movies|film|films|cinema|tv|show|shows|series|watch|watched|recommend|recommendation|suggest|suggestion|trailer|cast|actor|actress|director|imdb|rating|bollywood|hollywood|netflix|prime|hotstar|sci[- ]?fi|thriller|comedy|drama|horror|romance|romantic|action|anime|documentary|mood|vibe|genre|oscar|plot|ending|sequel|remake|franchise|character|scene|soundtrack|nexus|watchlist|streaming|binge|like|similar)\b/i;
+const OFFTOPIC_HINT = /\b(weather|forecast|temperature|news|stock|stocks|crypto|bitcoin|math|calculate|equation|joke|jokes|recipe|cook|cooking|food|restaurant|sports|football|cricket|nba|politics|election|president|code|coding|program|programming|javascript|python|history|geography|capital of|distance|translate|translation|email|resume|essay|life advice|meaning of life)\b/i;
+
+const MOVIE_INTENT = /\b(movie|film|watch|recommend|suggest|trailer|cast|director|imdb|bollywood|hollywood|sci[- ]?fi|thriller|comedy|drama|horror|romance|action|anime|series|show)\b/i;
+
+export function NexusAI() {
+  const [open, setOpen] = useState(false);
+  const [input, setInput] = useState("");
+  const [messages, setMessages] = useState<Msg[]>([
+    { role: "ai", text: "I'm NEXUS AI. Tell me what you're in the mood for, and I'll curate the perfect transmissions." },
+  ]);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedInitial, setSelectedInitial] = useState<Movie | null>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const apiKey = useTmdbKey();
+  const searchFn = useServerFn(tmdbSearch);
+  const aiFn = useServerFn(aiChat);
+  const search = useMutation({
+    mutationFn: (query: string) => searchFn({ data: { query, apiKey } }),
+  });
+  const ai = useMutation({
+    mutationFn: (history: { role: "user" | "assistant"; content: string }[]) =>
+      aiFn({ data: { messages: history } }),
+  });
+
+  useEffect(() => {
+    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
+  }, [messages, open]);
+
+  const send = async (text: string) => {
+    if (!text.trim()) return;
+    const next: Msg[] = [...messages, { role: "user", text }];
+    setMessages(next);
+    setInput("");
+
+    const cinematic = CINEMA_HINT.test(text);
+    const offtopic = !cinematic && OFFTOPIC_HINT.test(text);
+
+    if (offtopic) {
+      setMessages((m) => [...m, { role: "ai", text: OFFTOPIC_REPLY }]);
+      return;
+    }
+
+    const history = next
+      .filter((m) => m.text)
+      .map((m) => ({ role: m.role === "user" ? ("user" as const) : ("assistant" as const), content: m.text }));
+
+    try {
+      const [aiRes, movieRes] = await Promise.all([
+        ai.mutateAsync(history).catch(() => ({ reply: "" })),
+        cinematic ? search.mutateAsync(text).catch(() => ({ results: [] as Movie[] })) : Promise.resolve({ results: [] as Movie[] }),
+      ]);
+      const movies = (movieRes.results || []).slice(0, 4);
+      const reply = aiRes.reply?.trim() || (movies.length ? "Here are some matches from the archive:" : OFFTOPIC_REPLY);
+      setMessages((m) => [...m, { role: "ai", text: reply, movies: movies.length ? movies : undefined }]);
+    } catch {
+      setMessages((m) => [...m, { role: "ai", text: "The signal failed. Try again." }]);
+    }
+  };
+
+  const openMovie = (m: Movie) => {
+    setSelectedInitial(m);
+    setSelectedId(m.id);
+  };
+
+  return (
+    <>
+      {!open && (
+        <button
+          onClick={() => setOpen(true)}
+          aria-label="Open NEXUS AI"
+          className="fixed bottom-6 right-6 z-40 size-16 rounded-full flex items-center justify-center animate-glow-pulse hover:scale-110 transition"
+          style={{ background: "var(--gradient-neon)", boxShadow: "var(--shadow-glow-cyan), var(--shadow-glow-purple)" }}
+        >
+          <Sparkles className="size-7 text-background" />
+        </button>
+      )}
+
+      <div
+        className={`fixed inset-y-0 right-0 z-50 w-full sm:w-[440px] glass border-l transition-transform duration-300 flex flex-col ${open ? "translate-x-0" : "translate-x-full"}`}
+        style={{ background: "linear-gradient(180deg, oklch(0.1 0.02 275 / 0.95), oklch(0.06 0.015 270 / 0.95))" }}
+      >
+        <div className="p-4 border-b flex items-center gap-3">
+          <div className="size-10 rounded-full flex items-center justify-center animate-glow-pulse" style={{ background: "var(--gradient-neon)" }}>
+            <Bot className="size-5 text-background" />
+          </div>
+          <div className="flex-1">
+            <h3 className="font-display font-bold tracking-wider">NEXUS AI</h3>
+            <p className="text-[10px] uppercase tracking-[0.2em] text-cyan">● Online</p>
+          </div>
+          <button onClick={() => setOpen(false)} aria-label="Close" className="size-9 rounded-full glass flex items-center justify-center hover:glow-cyan transition">
+            <X className="size-4" />
+          </button>
+        </div>
+
+        <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-hide">
+          {messages.map((m, i) => (
+            <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
+              <div className={`max-w-[85%] space-y-3 ${m.role === "user" ? "" : "w-full"}`}>
+                {m.movies && (
+                  <div className="space-y-2">
+                    {m.movies.map((mv) => (
+                      <button key={mv.id} onClick={() => openMovie(mv)} className="w-full text-left rounded-lg overflow-hidden glass neon-border hover:glow-cyan transition flex gap-3">
+                        <div className="w-20 shrink-0 aspect-[2/3]">
+                          <img src={mv.poster} alt={mv.title} className="size-full object-cover" />
+                        </div>
+                        <div className="flex-1 min-w-0 p-2 pr-3">
+                          <p className="text-xs font-semibold truncate">{mv.title}</p>
+                          <p className="text-[10px] text-muted-foreground mb-1">{mv.year || "—"} · ★ {mv.rating.toFixed(1)}</p>
+                          <p className="text-[11px] text-muted-foreground line-clamp-3">{mv.overview || "No description available."}</p>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {m.text && (
+                  <div
+                    className={`px-4 py-2.5 rounded-2xl text-sm ${m.role === "user" ? "rounded-br-sm" : "glass neon-border rounded-bl-sm"}`}
+                    style={m.role === "user" ? { background: "var(--gradient-neon)", color: "var(--background)" } : undefined}
+                  >
+                    {m.text}
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+          {(search.isPending || ai.isPending) && (
+            <div className="flex items-center gap-2 text-cyan text-xs animate-glow-pulse">
+              <span className="size-2 rounded-full bg-cyan" /> Thinking…
+            </div>
+          )}
+        </div>
+
+        <div className="p-4 border-t space-y-3">
+          <div className="flex flex-wrap gap-1.5">
+            {SUGGESTIONS.map((s) => (
+              <button key={s} onClick={() => send(s)} className="text-[10px] px-2.5 py-1 rounded-full glass neon-border text-cyan hover:glow-cyan transition">
+                {s}
+              </button>
+            ))}
+          </div>
+          <form onSubmit={(e) => { e.preventDefault(); send(input); }} className="glass neon-border rounded-full flex items-center px-4 py-2">
+            <input
+              value={input} onChange={(e) => setInput(e.target.value)}
+              placeholder="Ask NEXUS anything…"
+              className="flex-1 bg-transparent outline-none text-sm placeholder:text-muted-foreground"
+            />
+            <button type="submit" aria-label="Send" className="size-8 rounded-full flex items-center justify-center" style={{ background: "var(--gradient-neon)" }}>
+              <Send className="size-3.5 text-background" />
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <MovieModal
+        movieId={selectedId}
+        initial={selectedInitial}
+        onClose={() => setSelectedId(null)}
+        onSwitch={(m) => { setSelectedInitial(m); setSelectedId(m.id); }}
+      />
+    </>
+  );
+}
