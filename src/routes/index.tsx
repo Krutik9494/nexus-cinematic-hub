@@ -2,10 +2,11 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { Search, Sparkles, TrendingUp, Flame } from "lucide-react";
 import heroBg from "@/assets/hero-bg.jpg";
-import { GENRES, MOVIES, POPULAR, TRENDING, type Movie } from "@/lib/movies";
+import { ALL_GENRES, POPULAR, TRENDING, type Movie } from "@/lib/movies";
 import { MovieCard } from "@/components/MovieCard";
 import { MovieModal } from "@/components/MovieModal";
 import { Carousel } from "@/components/Carousel";
+import { ParticleField } from "@/components/ParticleField";
 
 export const Route = createFileRoute("/")({
   head: () => ({
