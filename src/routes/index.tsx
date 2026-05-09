@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Search, Sparkles, TrendingUp, Flame, Music } from "lucide-react";
 import heroBg from "@/assets/hero-bg.jpg";
+import heroVideo from "@/assets/hero-cinematic.mp4.asset.json";
 import { ALL_GENRES, type Movie } from "@/lib/movies";
 import { MovieCard, MovieCardSkeleton } from "@/components/MovieCard";
 import { MovieModal } from "@/components/MovieModal";
@@ -118,15 +119,25 @@ function Home() {
   return (
     <div>
       <section className="relative min-h-[88vh] flex items-center justify-center overflow-hidden">
-        <img
-          src={heroBg}
-          alt=""
-          width={1920}
-          height={1024}
-          className="absolute inset-0 size-full object-cover opacity-50"
+        <video
+          src={heroVideo.url}
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="auto"
+          poster={heroBg}
+          className="absolute inset-0 size-full object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/40 to-background" />
-        <div className="absolute inset-0 grid-bg opacity-40" />
+        <div className="absolute inset-0 bg-gradient-to-b from-background/70 via-background/50 to-background" />
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              "radial-gradient(ellipse at center, transparent 30%, rgba(5,5,7,0.7) 80%, rgba(5,5,7,0.95) 100%)",
+          }}
+        />
+        <div className="absolute inset-0 grid-bg opacity-30" />
         <div className="absolute inset-0"><ParticleField /></div>
 
         <div className="relative max-w-4xl mx-auto px-4 text-center py-20">
