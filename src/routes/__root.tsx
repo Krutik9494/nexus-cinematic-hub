@@ -7,8 +7,10 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { Navbar } from "@/components/Navbar";
+import { NexusAI } from "@/components/NexusAI";
 
 import appCss from "../styles.css?url";
 
@@ -70,6 +72,13 @@ function RootShell({ children }: { children: React.ReactNode }) {
   );
 }
 
+function ClientOnly({ children }: { children: React.ReactNode }) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
+  if (!mounted) return null;
+  return <>{children}</>;
+}
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   return (
@@ -79,7 +88,20 @@ function RootComponent() {
         <main className="pt-16">
           <Outlet />
         </main>
-        <Toaster theme="dark" position="bottom-right" />
+        <ClientOnly>
+          <NexusAI />
+          <Toaster
+            theme="dark"
+            position="bottom-right"
+            toastOptions={{
+              classNames: {
+                toast: "glass neon-border !bg-background/80 !text-foreground !border-cyan/40",
+                title: "!text-foreground",
+                description: "!text-muted-foreground",
+              },
+            }}
+          />
+        </ClientOnly>
       </div>
     </QueryClientProvider>
   );
