@@ -29,8 +29,13 @@ export function NexusAI() {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const searchFn = useServerFn(tmdbSearch);
+  const aiFn = useServerFn(aiChat);
   const search = useMutation({
     mutationFn: (query: string) => searchFn({ data: { query } }),
+  });
+  const ai = useMutation({
+    mutationFn: (history: { role: "user" | "assistant"; content: string }[]) =>
+      aiFn({ data: { messages: history } }),
   });
 
   useEffect(() => {
@@ -39,17 +44,24 @@ export function NexusAI() {
 
   const send = async (text: string) => {
     if (!text.trim()) return;
-    setMessages((m) => [...m, { role: "user", text }]);
+    const next: Msg[] = [...messages, { role: "user", text }];
+    setMessages(next);
     setInput("");
+
+    const history = next
+      .filter((m) => m.text)
+      .map((m) => ({ role: m.role === "user" ? ("user" as const) : ("assistant" as const), content: m.text }));
+
+    const wantsMovies = MOVIE_INTENT.test(text);
+
     try {
-      const res = await search.mutateAsync(text);
-      const movies = res.results.slice(0, 4);
-      setMessages((m) => [
-        ...m,
-        movies.length
-          ? { role: "ai", text: `I found ${movies.length} cinematic matches for you:`, movies }
-          : { role: "ai", text: "No matches in the archive. Try another signal." },
+      const [aiRes, movieRes] = await Promise.all([
+        ai.mutateAsync(history).catch(() => ({ reply: "" })),
+        wantsMovies ? search.mutateAsync(text).catch(() => ({ results: [] as Movie[] })) : Promise.resolve({ results: [] as Movie[] }),
       ]);
+      const movies = (movieRes.results || []).slice(0, 4);
+      const reply = aiRes.reply?.trim() || (movies.length ? "Here are some matches from the archive:" : "The signal flickered. Try rephrasing.");
+      setMessages((m) => [...m, { role: "ai", text: reply, movies: movies.length ? movies : undefined }]);
     } catch {
       setMessages((m) => [...m, { role: "ai", text: "The signal failed. Try again." }]);
     }
