@@ -116,23 +116,28 @@ export function NexusAI() {
           {messages.map((m, i) => (
             <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
               <div className={`max-w-[85%] space-y-3 ${m.role === "user" ? "" : "w-full"}`}>
-                <div
-                  className={`px-4 py-2.5 rounded-2xl text-sm ${m.role === "user" ? "rounded-br-sm" : "glass neon-border rounded-bl-sm"}`}
-                  style={m.role === "user" ? { background: "var(--gradient-neon)", color: "var(--background)" } : undefined}
-                >
-                  {m.text}
-                </div>
                 {m.movies && (
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="space-y-2">
                     {m.movies.map((mv) => (
-                      <button key={mv.id} onClick={() => openMovie(mv)} className="text-left rounded-lg overflow-hidden glass neon-border hover:glow-cyan transition">
-                        <div className="aspect-[2/3]"><img src={mv.poster} alt={mv.title} className="size-full object-cover" /></div>
-                        <div className="p-2">
+                      <button key={mv.id} onClick={() => openMovie(mv)} className="w-full text-left rounded-lg overflow-hidden glass neon-border hover:glow-cyan transition flex gap-3">
+                        <div className="w-20 shrink-0 aspect-[2/3]">
+                          <img src={mv.poster} alt={mv.title} className="size-full object-cover" />
+                        </div>
+                        <div className="flex-1 min-w-0 p-2 pr-3">
                           <p className="text-xs font-semibold truncate">{mv.title}</p>
-                          <p className="text-[10px] text-muted-foreground">{mv.year || "—"} · ★ {mv.rating.toFixed(1)}</p>
+                          <p className="text-[10px] text-muted-foreground mb-1">{mv.year || "—"} · ★ {mv.rating.toFixed(1)}</p>
+                          <p className="text-[11px] text-muted-foreground line-clamp-3">{mv.overview || "No description available."}</p>
                         </div>
                       </button>
                     ))}
+                  </div>
+                )}
+                {m.text && (
+                  <div
+                    className={`px-4 py-2.5 rounded-2xl text-sm ${m.role === "user" ? "rounded-br-sm" : "glass neon-border rounded-bl-sm"}`}
+                    style={m.role === "user" ? { background: "var(--gradient-neon)", color: "var(--background)" } : undefined}
+                  >
+                    {m.text}
                   </div>
                 )}
               </div>
