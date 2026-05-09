@@ -434,29 +434,31 @@ function PickPoster({ src, title, year, tmdbId }: { src: string; title: string; 
 
   const [loaded, setLoaded] = useState(false);
   const [fallback, setFallback] = useState(false);
-  const finalSrc = fallback ? src : livePoster || src;
+  const finalSrc = fallback || !livePoster ? src : livePoster;
 
   return (
     <>
-      {(!loaded || isLoading) && (
+      {(isLoading || !loaded) && (
         <div className="absolute inset-0 animate-pulse bg-gradient-to-br from-muted/40 to-muted/10" />
       )}
-      <img
-        key={finalSrc}
-        src={finalSrc}
-        alt={title}
-        loading="lazy"
-        onLoad={() => setLoaded(true)}
-        onError={() => {
-          if (!fallback && finalSrc !== src) {
-            setFallback(true);
-            setLoaded(false);
-          } else {
-            setLoaded(true);
-          }
-        }}
-        className="size-full object-cover aspect-[2/3] transition-transform duration-500 group-hover:scale-110"
-      />
+      {!isLoading && (
+        <img
+          key={finalSrc}
+          src={finalSrc}
+          alt={title}
+          loading="lazy"
+          onLoad={() => setLoaded(true)}
+          onError={() => {
+            if (!fallback && finalSrc !== src) {
+              setFallback(true);
+              setLoaded(false);
+            } else {
+              setLoaded(true);
+            }
+          }}
+          className="size-full object-cover aspect-[2/3] transition-transform duration-500 group-hover:scale-110"
+        />
+      )}
     </>
   );
 }
