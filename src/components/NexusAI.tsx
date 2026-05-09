@@ -10,11 +10,15 @@ import { MovieModal } from "./MovieModal";
 type Msg = { role: "user" | "ai"; text: string; movies?: Movie[] };
 
 const SUGGESTIONS = [
-  "Recommend a sci-fi film",
-  "Explain the ending of Inception",
-  "Top Bollywood thrillers",
-  "Why is the sky blue?",
+  "Mood-based recs",
+  "Bollywood action",
+  "Mind-bending sci-fi",
+  "Like Oppenheimer",
 ];
+
+const OFFTOPIC_REPLY = "I'm sorry, I can only help with movie recommendations and cinema-related questions.";
+const CINEMA_HINT = /\b(movie|movies|film|films|cinema|tv|show|shows|series|watch|watched|recommend|recommendation|suggest|suggestion|trailer|cast|actor|actress|director|imdb|rating|bollywood|hollywood|netflix|prime|hotstar|sci[- ]?fi|thriller|comedy|drama|horror|romance|romantic|action|anime|documentary|mood|vibe|genre|oscar|plot|ending|sequel|remake|franchise|character|scene|soundtrack|nexus|watchlist|streaming|binge|like|similar)\b/i;
+const OFFTOPIC_HINT = /\b(weather|forecast|temperature|news|stock|stocks|crypto|bitcoin|math|calculate|equation|joke|jokes|recipe|cook|cooking|food|restaurant|sports|football|cricket|nba|politics|election|president|code|coding|program|programming|javascript|python|history|geography|capital of|distance|translate|translation|email|resume|essay|life advice|meaning of life)\b/i;
 
 const MOVIE_INTENT = /\b(movie|film|watch|recommend|suggest|trailer|cast|director|imdb|bollywood|hollywood|sci[- ]?fi|thriller|comedy|drama|horror|romance|action|anime|series|show)\b/i;
 
