@@ -81,12 +81,12 @@ function Profile() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12">
       <div className="flex items-center gap-5">
         <div className="size-20 rounded-full flex items-center justify-center" style={{ background: "var(--gradient-neon)", boxShadow: "var(--shadow-glow-cyan)" }}>
-          <span className="font-display text-3xl font-bold text-background">N</span>
+          <span className="font-display text-3xl font-bold text-background">{initial}</span>
         </div>
         <div>
           <p className="text-cyan text-xs uppercase tracking-[0.3em]">Operative</p>
-          <h1 className="font-display text-4xl sm:text-5xl font-bold mt-1">Nexus User</h1>
-          <p className="text-muted-foreground mt-1">Curating the universe, one film at a time.</p>
+          <h1 className="font-display text-4xl sm:text-5xl font-bold mt-1">{displayName}</h1>
+          <p className="text-muted-foreground mt-1">{user?.email || "Curating the universe, one film at a time."}</p>
         </div>
       </div>
 
