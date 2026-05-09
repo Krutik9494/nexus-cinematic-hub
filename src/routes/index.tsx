@@ -15,6 +15,7 @@ import { ParticleField } from "@/components/ParticleField";
 import {
   tmdbBollywood,
   tmdbDiscover,
+  tmdbPosterLookup,
   tmdbSearch,
   tmdbTopRated,
   tmdbTrending,
@@ -420,29 +421,24 @@ function MoodPicksSection({ mood, onClose }: { mood: Mood; onClose: () => void }
   );
 }
 
-const POSTER_FALLBACK =
-  "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=600&h=900&fit=crop&q=80";
-
 function PickPoster({ src, title, year }: { src: string; title: string; year?: number }) {
-  const searchFn = useServerFn(tmdbSearch);
-  const { data: tmdbPoster } = useQuery({
-    queryKey: ["pickPoster", title, year],
+  const posterLookupFn = useServerFn(tmdbPosterLookup);
+  const { data: livePoster, isLoading } = useQuery({
+    queryKey: ["tmdbLivePoster", title, year],
     queryFn: async () => {
-      const res = await searchFn({ data: { query: title } });
-      const match =
-        res.results.find((m) => year && m.year === year) || res.results[0];
-      return match?.poster || null;
+      const res = await posterLookupFn({ data: { title, year } });
+      return res.poster;
     },
-    staleTime: 60 * 60_000,
+    staleTime: 24 * 60 * 60_000,
   });
 
   const [loaded, setLoaded] = useState(false);
-  const [errored, setErrored] = useState(false);
-  const finalSrc = errored ? POSTER_FALLBACK : tmdbPoster || src;
+  const [fallback, setFallback] = useState(false);
+  const finalSrc = fallback ? src : livePoster || src;
 
   return (
     <>
-      {!loaded && (
+      {(!loaded || isLoading) && (
         <div className="absolute inset-0 animate-pulse bg-gradient-to-br from-muted/40 to-muted/10" />
       )}
       <img
@@ -452,8 +448,12 @@ function PickPoster({ src, title, year }: { src: string; title: string; year?: n
         loading="lazy"
         onLoad={() => setLoaded(true)}
         onError={() => {
-          setErrored(true);
-          setLoaded(true);
+          if (!fallback && finalSrc !== src) {
+            setFallback(true);
+            setLoaded(false);
+          } else {
+            setLoaded(true);
+          }
         }}
         className="size-full object-cover aspect-[2/3] transition-transform duration-500 group-hover:scale-110"
       />
