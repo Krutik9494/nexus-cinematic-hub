@@ -4,6 +4,8 @@ import {
   Link,
   createRootRouteWithContext,
   useRouter,
+  useLocation,
+  useNavigate,
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
@@ -80,16 +82,33 @@ function ClientOnly({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+function AuthGate() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  useEffect(() => {
+    try {
+      const u = localStorage.getItem("nexus_user");
+      if (!u && location.pathname !== "/signup") {
+        navigate({ to: "/signup", replace: true });
+      }
+    } catch {}
+  }, [location.pathname, navigate]);
+  return null;
+}
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const location = useLocation();
+  const isSignup = location.pathname === "/signup";
   return (
     <QueryClientProvider client={queryClient}>
       <div className="min-h-screen relative">
         <ClientOnly>
           <CinematicBackground />
+          <AuthGate />
         </ClientOnly>
-        <Navbar />
-        <main className="pt-16 relative">
+        {!isSignup && <Navbar />}
+        <main className={isSignup ? "relative" : "pt-16 relative"}>
           <Outlet />
         </main>
         <ClientOnly>
