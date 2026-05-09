@@ -84,9 +84,12 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   return (
     <QueryClientProvider client={queryClient}>
-      <div className="min-h-screen">
+      <div className="min-h-screen relative">
+        <ClientOnly>
+          <CinematicBackground />
+        </ClientOnly>
         <Navbar />
-        <main className="pt-16">
+        <main className="pt-16 relative">
           <Outlet />
         </main>
         <ClientOnly>
