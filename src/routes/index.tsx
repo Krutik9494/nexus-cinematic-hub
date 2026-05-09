@@ -423,16 +423,30 @@ function MoodPicksSection({ mood, onClose }: { mood: Mood; onClose: () => void }
 const POSTER_FALLBACK =
   "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=600&h=900&fit=crop&q=80";
 
-function PickPoster({ src, title }: { src: string; title: string }) {
+function PickPoster({ src, title, year }: { src: string; title: string; year?: number }) {
+  const searchFn = useServerFn(tmdbSearch);
+  const { data: tmdbPoster } = useQuery({
+    queryKey: ["pickPoster", title, year],
+    queryFn: async () => {
+      const res = await searchFn({ data: { query: title } });
+      const match =
+        res.results.find((m) => year && m.year === year) || res.results[0];
+      return match?.poster || null;
+    },
+    staleTime: 60 * 60_000,
+  });
+
   const [loaded, setLoaded] = useState(false);
   const [errored, setErrored] = useState(false);
-  const finalSrc = errored ? POSTER_FALLBACK : src;
+  const finalSrc = errored ? POSTER_FALLBACK : tmdbPoster || src;
+
   return (
     <>
       {!loaded && (
         <div className="absolute inset-0 animate-pulse bg-gradient-to-br from-muted/40 to-muted/10" />
       )}
       <img
+        key={finalSrc}
         src={finalSrc}
         alt={title}
         loading="lazy"
