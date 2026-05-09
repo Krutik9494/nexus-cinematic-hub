@@ -352,3 +352,70 @@ function ErrorBox({ message }: { message: string }) {
     </div>
   );
 }
+
+function MoodPicksSection({ mood, onClose }: { mood: Mood; onClose: () => void }) {
+  const items = useWatchlist();
+  return (
+    <section className="max-w-7xl mx-auto px-4 sm:px-6 py-10 animate-fade-in">
+      <div className="glass neon-border rounded-3xl p-6 sm:p-8" style={{ boxShadow: "0 0 60px -20px rgba(0,245,255,0.35)" }}>
+        <div className="flex items-start justify-between gap-4 mb-6">
+          <div>
+            <div className="flex items-center gap-2 text-cyan text-xs uppercase tracking-[0.3em]">
+              <Sparkles className="size-4" /> Mood Picks
+            </div>
+            <h2 className="font-display text-2xl sm:text-3xl font-bold mt-2">
+              <span className="mr-2">{mood.emoji}</span>
+              Movies for your <span className="text-gradient">{mood.label}</span> vibe
+            </h2>
+          </div>
+          <button
+            onClick={onClose}
+            aria-label="Close recommendations"
+            className="size-9 rounded-full glass neon-border flex items-center justify-center text-muted-foreground hover:text-cyan transition shrink-0"
+          >
+            <X className="size-4" />
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+          {mood.picks.map((p) => {
+            const inList = !!items.find((i) => i.id === p.id);
+            return (
+              <div key={p.id} className="group rounded-2xl overflow-hidden glass neon-border transition hover:-translate-y-1 hover:glow-cyan">
+                <div className="aspect-[2/3] overflow-hidden relative">
+                  <img src={p.poster} alt={p.title} loading="lazy" className="size-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-background via-background/30 to-transparent" />
+                  <div className="absolute top-2 right-2 glass rounded-full px-2 py-0.5 flex items-center gap-1 text-xs">
+                    <Star className="size-3 fill-cyan text-cyan" />
+                    <span className="font-semibold">{p.rating.toFixed(1)}</span>
+                  </div>
+                </div>
+                <div className="p-4 space-y-2">
+                  <h3 className="font-display font-semibold text-lg leading-tight">{p.title}</h3>
+                  <p className="text-xs text-muted-foreground">{p.year}</p>
+                  <p className="text-sm text-foreground/80 line-clamp-2">{p.description}</p>
+                  <button
+                    onClick={() => {
+                      if (inList) {
+                        watchlist.remove(p.id);
+                        toast("Removed from watchlist");
+                      } else {
+                        watchlist.add(p.id);
+                        toast.success(`Added "${p.title}" to your watchlist`);
+                      }
+                    }}
+                    className={`mt-2 w-full rounded-full py-2.5 text-sm font-semibold flex items-center justify-center gap-2 transition glass neon-border ${
+                      inList ? "text-cyan glow-cyan" : "text-foreground hover:text-cyan hover:glow-cyan"
+                    }`}
+                  >
+                    {inList ? <><Check className="size-4" /> In Watchlist</> : <><Plus className="size-4" /> Add to Watchlist</>}
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
