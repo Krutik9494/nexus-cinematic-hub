@@ -230,7 +230,7 @@ function Home() {
               <Flame className="size-4" /> Popular
             </div>
             <h2 className="font-display text-3xl sm:text-4xl font-bold mt-2">
-              {debouncedQuery ? `Results for "${debouncedQuery}"` : genre !== "All" ? genre : "Popular Movies"}
+              {mood.emoji} Picked for your {mood.label.toLowerCase()} mood
             </h2>
           </div>
           <p className="text-sm text-muted-foreground">{popular.data?.length ?? 0} titles</p>
