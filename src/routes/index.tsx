@@ -40,6 +40,7 @@ function Home() {
         <img src={heroBg} alt="" width={1920} height={1024} className="absolute inset-0 size-full object-cover opacity-50" />
         <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/40 to-background" />
         <div className="absolute inset-0 grid-bg opacity-40" />
+        <div className="absolute inset-0"><ParticleField /></div>
 
         <div className="relative max-w-4xl mx-auto px-4 text-center py-20">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass neon-border text-xs uppercase tracking-[0.3em] text-cyan animate-glow-pulse">
