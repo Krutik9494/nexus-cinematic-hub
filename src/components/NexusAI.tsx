@@ -53,9 +53,9 @@ export function NexusAI() {
     setInput("");
 
     const cinematic = CINEMA_HINT.test(text);
-    const offtopic = !cinematic && OFFTOPIC_HINT.test(text);
+    const offtopicHint = !cinematic && OFFTOPIC_HINT.test(text);
 
-    if (offtopic) {
+    if (offtopicHint) {
       setMessages((m) => [...m, { role: "ai", text: OFFTOPIC_REPLY }]);
       return;
     }
@@ -65,12 +65,25 @@ export function NexusAI() {
       .map((m) => ({ role: m.role === "user" ? ("user" as const) : ("assistant" as const), content: m.text }));
 
     try {
-      const [aiRes, movieRes] = await Promise.all([
-        ai.mutateAsync(history).catch(() => ({ reply: "" })),
-        cinematic ? search.mutateAsync(text).catch(() => ({ results: [] as Movie[] })) : Promise.resolve({ results: [] as Movie[] }),
-      ]);
-      const movies = (movieRes.results || []).slice(0, 4);
-      const reply = aiRes.reply?.trim() || (movies.length ? "Here are some matches from the archive:" : OFFTOPIC_REPLY);
+      const aiRes = await ai.mutateAsync(history).catch(() => ({ reply: "", titles: [] as string[], offtopic: false }));
+
+      if ((aiRes as any).offtopic) {
+        setMessages((m) => [...m, { role: "ai", text: OFFTOPIC_REPLY }]);
+        return;
+      }
+
+      const titles: string[] = ((aiRes as any).titles || []).slice(0, 5);
+
+      // Look up each title in TMDB to get poster + overview
+      const lookups = await Promise.all(
+        titles.map((t) =>
+          search.mutateAsync(t.replace(/\s*\(\d{4}\)\s*$/, "")).then((r) => r.results?.[0]).catch(() => undefined)
+        )
+      );
+      const seen = new Set<string>();
+      const movies = lookups.filter((m): m is Movie => !!m && !seen.has(m.id) && (seen.add(m.id), true));
+
+      const reply = aiRes.reply?.trim() || (movies.length ? "Here are some picks from the archive:" : OFFTOPIC_REPLY);
       setMessages((m) => [...m, { role: "ai", text: reply, movies: movies.length ? movies : undefined }]);
     } catch {
       setMessages((m) => [...m, { role: "ai", text: "The signal failed. Try again." }]);
