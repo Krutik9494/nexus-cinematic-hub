@@ -383,7 +383,7 @@ function MoodPicksSection({ mood, onClose }: { mood: Mood; onClose: () => void }
             return (
               <div key={p.id} className="group rounded-2xl overflow-hidden glass neon-border transition hover:-translate-y-1 hover:glow-cyan">
                 <div className="aspect-[2/3] overflow-hidden relative">
-                  <PickPoster title={p.title} src={p.poster} />
+                  <PickPoster title={p.title} year={p.year} src={p.poster} />
                   <div className="absolute inset-0 bg-gradient-to-t from-background via-background/30 to-transparent" />
                   <div className="absolute top-2 right-2 glass rounded-full px-2 py-0.5 flex items-center gap-1 text-xs">
                     <Star className="size-3 fill-cyan text-cyan" />
