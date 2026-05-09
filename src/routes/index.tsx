@@ -84,7 +84,7 @@ function GridSkeleton({ n = 10 }: { n?: number }) {
 
 type MoodPick = {
   id: string;
-  tmdbId: number;
+  tmdbId?: number;
   title: string;
   year: number;
   rating: number;
@@ -384,7 +384,7 @@ function MoodPicksSection({ mood, onClose }: { mood: Mood; onClose: () => void }
             return (
               <div key={p.id} className="group rounded-2xl overflow-hidden glass neon-border transition hover:-translate-y-1 hover:glow-cyan">
                 <div className="aspect-[2/3] overflow-hidden relative">
-                  <PickPoster title={p.title} year={p.year} src={p.poster} />
+                  <PickPoster tmdbId={p.tmdbId} title={p.title} year={p.year} src={p.poster} />
                   <div className="absolute inset-0 bg-gradient-to-t from-background via-background/30 to-transparent" />
                   <div className="absolute top-2 right-2 glass rounded-full px-2 py-0.5 flex items-center gap-1 text-xs">
                     <Star className="size-3 fill-cyan text-cyan" />
@@ -421,12 +421,12 @@ function MoodPicksSection({ mood, onClose }: { mood: Mood; onClose: () => void }
   );
 }
 
-function PickPoster({ src, title, year }: { src: string; title: string; year?: number }) {
+function PickPoster({ src, title, year, tmdbId }: { src: string; title: string; year?: number; tmdbId?: number }) {
   const posterLookupFn = useServerFn(tmdbPosterLookup);
   const { data: livePoster, isLoading } = useQuery({
-    queryKey: ["tmdbLivePoster", title, year],
+    queryKey: ["tmdbLivePoster", tmdbId, title, year],
     queryFn: async () => {
-      const res = await posterLookupFn({ data: { title, year } });
+      const res = await posterLookupFn({ data: { id: tmdbId, title, year } });
       return res.poster;
     },
     staleTime: 24 * 60 * 60_000,
