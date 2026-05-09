@@ -2,10 +2,10 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Search, Sparkles, TrendingUp, Flame, Music, Award } from "lucide-react";
+import { Sparkles, TrendingUp, Flame, Music, Award } from "lucide-react";
 import heroBg from "@/assets/hero-bg.jpg";
 import { HeroCinematic } from "@/components/HeroCinematic";
-import { ALL_GENRES, type Movie } from "@/lib/movies";
+import { type Movie } from "@/lib/movies";
 import { MovieCard, MovieCardSkeleton } from "@/components/MovieCard";
 import { MovieModal } from "@/components/MovieModal";
 import { Carousel } from "@/components/Carousel";
@@ -80,16 +80,35 @@ function GridSkeleton({ n = 10 }: { n?: number }) {
   );
 }
 
+type Mood = {
+  id: string;
+  label: string;
+  emoji: string;
+  tagline: string;
+  genres: string[];
+  sortBy: string;
+  minRating?: number;
+};
+
+const MOODS: Mood[] = [
+  { id: "happy", label: "Happy", emoji: "😄", tagline: "Feel-good laughs and warm endings.", genres: ["Comedy", "Family"], sortBy: "popularity.desc", minRating: 6.5 },
+  { id: "sad", label: "Reflective", emoji: "🥲", tagline: "Slow burns that hit deep.", genres: ["Drama"], sortBy: "vote_average.desc", minRating: 7.5 },
+  { id: "thrill", label: "Thrilled", emoji: "😱", tagline: "Edge-of-your-seat tension.", genres: ["Thriller", "Mystery"], sortBy: "popularity.desc", minRating: 6.5 },
+  { id: "adventurous", label: "Adventurous", emoji: "🗺️", tagline: "Big worlds, bigger journeys.", genres: ["Adventure", "Action"], sortBy: "popularity.desc", minRating: 6.5 },
+  { id: "romantic", label: "Romantic", emoji: "💖", tagline: "Love, longing, and slow dances.", genres: ["Romance"], sortBy: "popularity.desc", minRating: 6.5 },
+  { id: "mindbender", label: "Mind-bent", emoji: "🧠", tagline: "Reality-warping sci-fi.", genres: ["Science Fiction"], sortBy: "vote_average.desc", minRating: 7.5 },
+  { id: "spooky", label: "Spooky", emoji: "👻", tagline: "Lights off. Volume up.", genres: ["Horror"], sortBy: "popularity.desc", minRating: 6 },
+  { id: "inspired", label: "Inspired", emoji: "🌟", tagline: "True stories that move you.", genres: ["History", "Drama"], sortBy: "vote_average.desc", minRating: 7.5 },
+  { id: "nostalgic", label: "Nostalgic", emoji: "📼", tagline: "Animated classics for all ages.", genres: ["Animation", "Family"], sortBy: "vote_average.desc", minRating: 7.5 },
+];
+
 function Home() {
-  const [query, setQuery] = useState("");
-  const [genre, setGenre] = useState("All");
+  const [mood, setMood] = useState<Mood>(MOODS[0]);
   const [selected, setSelected] = useState<Movie | null>(null);
-  const debouncedQuery = useDebounced(query.trim(), 400);
 
   const trendingFn = useServerFn(tmdbTrending);
   const bollywoodFn = useServerFn(tmdbBollywood);
   const discoverFn = useServerFn(tmdbDiscover);
-  const searchFn = useServerFn(tmdbSearch);
   const topRatedFn = useServerFn(tmdbTopRated);
 
   const topRated = useQuery({
@@ -109,18 +128,15 @@ function Home() {
     staleTime: 5 * 60_000,
   });
   const popular = useQuery({
-    queryKey: ["popular", genre, debouncedQuery],
-    queryFn: () => {
-      if (debouncedQuery) {
-        return searchFn({ data: { query: debouncedQuery } }).then((r) => r.results);
-      }
-      return discoverFn({
+    queryKey: ["mood", mood.id],
+    queryFn: () =>
+      discoverFn({
         data: {
-          sortBy: "popularity.desc",
-          genres: genre === "All" ? undefined : [genre],
+          sortBy: mood.sortBy,
+          genres: mood.genres,
+          minRating: mood.minRating,
         },
-      }).then((r) => r.results);
-    },
+      }).then((r) => r.results),
     staleTime: 60_000,
   });
 
@@ -142,49 +158,38 @@ function Home() {
 
         <div className="relative max-w-4xl mx-auto px-4 text-center py-20">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass neon-border text-xs uppercase tracking-[0.3em] text-cyan animate-glow-pulse">
-            <Sparkles className="size-3" /> Welcome to Nexus
+            <Sparkles className="size-3" /> Mood Match
           </div>
           <h1 className="mt-6 font-display text-5xl sm:text-7xl lg:text-8xl font-bold leading-[1.05]">
-            What's your <span className="text-gradient">vibe?</span>
+            How are you <span className="text-gradient">feeling?</span>
           </h1>
           <p className="mt-6 text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto">
-            Movies that match your mood.
+            Pick a mood — we'll tune the screen to match.
           </p>
 
-          <div className="mt-10 max-w-2xl mx-auto relative">
-            <div
-              className="absolute inset-0 rounded-full opacity-60 blur-2xl"
-              style={{ background: "var(--gradient-neon)" }}
-            />
-            <div className="relative glass neon-border rounded-full flex items-center px-5 py-3">
-              <Search className="size-5 text-cyan" />
-              <input
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search any movie, real-time…"
-                className="flex-1 bg-transparent outline-none px-4 text-base placeholder:text-muted-foreground"
-              />
-              <span className="hidden sm:block text-xs text-muted-foreground px-3">
-                {popular.isFetching ? "Searching…" : ""}
-              </span>
-            </div>
+          <div className="mt-10 flex flex-wrap justify-center gap-2 sm:gap-3 max-w-3xl mx-auto">
+            {MOODS.map((m) => {
+              const active = m.id === mood.id;
+              return (
+                <button
+                  key={m.id}
+                  onClick={() => setMood(m)}
+                  className={`group px-4 sm:px-5 py-2.5 rounded-full glass neon-border transition flex items-center gap-2 text-sm ${
+                    active
+                      ? "text-cyan glow-cyan scale-[1.03]"
+                      : "text-muted-foreground hover:text-foreground hover:scale-[1.02]"
+                  }`}
+                >
+                  <span className="text-base">{m.emoji}</span>
+                  <span className="font-medium">{m.label}</span>
+                </button>
+              );
+            })}
           </div>
 
-          <div className="mt-8 flex flex-wrap justify-center gap-2">
-            {ALL_GENRES.slice(0, 9).map((g) => (
-              <button
-                key={g}
-                onClick={() => setGenre(g)}
-                className={`px-4 py-1.5 text-xs rounded-full glass neon-border transition ${
-                  genre === g
-                    ? "text-cyan glow-cyan"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {g}
-              </button>
-            ))}
-          </div>
+          <p className="mt-6 text-sm text-cyan/90 italic min-h-[1.25rem]">
+            {mood.tagline}
+          </p>
         </div>
       </section>
 
@@ -225,7 +230,7 @@ function Home() {
               <Flame className="size-4" /> Popular
             </div>
             <h2 className="font-display text-3xl sm:text-4xl font-bold mt-2">
-              {debouncedQuery ? `Results for "${debouncedQuery}"` : genre !== "All" ? genre : "Popular Movies"}
+              {mood.emoji} Picked for your {mood.label.toLowerCase()} mood
             </h2>
           </div>
           <p className="text-sm text-muted-foreground">{popular.data?.length ?? 0} titles</p>
