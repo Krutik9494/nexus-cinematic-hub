@@ -225,7 +225,7 @@ function Home() {
             How are you <span className="text-gradient">feeling?</span>
           </h1>
           <p className="mt-6 text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto">
-            Pick a mood — we'll tune the screen to match.
+            Pick a mood and we'll find your movie.
           </p>
 
           <div className="mt-10 flex flex-wrap justify-center gap-2 sm:gap-3 max-w-3xl mx-auto">
@@ -234,7 +234,7 @@ function Home() {
               return (
                 <button
                   key={m.id}
-                  onClick={() => setMood(m)}
+                  onClick={() => handleMoodClick(m)}
                   className={`group px-4 sm:px-5 py-2.5 rounded-full glass neon-border transition flex items-center gap-2 text-sm ${
                     active
                       ? "text-cyan glow-cyan scale-[1.03]"
@@ -253,6 +253,17 @@ function Home() {
           </p>
         </div>
       </section>
+
+      {/* Mood picks (instant recommendations) */}
+      <div ref={picksRef}>
+        {picksMood && (
+          <MoodPicksSection
+            key={picksMood.id}
+            mood={picksMood}
+            onClose={() => setPicksMood(null)}
+          />
+        )}
+      </div>
 
       {/* Trending */}
       <Section icon={<TrendingUp className="size-4" />} eyebrow="Trending" title="This Week">
