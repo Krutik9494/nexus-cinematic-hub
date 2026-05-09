@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { useQuery, useServerFn } from "@tanstack/react-start";
+import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { Search, Sparkles, TrendingUp, Flame, Music } from "lucide-react";
 import heroBg from "@/assets/hero-bg.jpg";
 import { ALL_GENRES, type Movie } from "@/lib/movies";
