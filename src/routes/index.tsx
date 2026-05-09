@@ -1,8 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Sparkles, TrendingUp, Flame, Music, Award } from "lucide-react";
+import { Sparkles, TrendingUp, Flame, Music, Award, X, Star, Plus, Check } from "lucide-react";
+import { toast } from "sonner";
+import { watchlist, useWatchlist } from "@/lib/watchlist-store";
 import heroBg from "@/assets/hero-bg.jpg";
 import { HeroCinematic } from "@/components/HeroCinematic";
 import { type Movie } from "@/lib/movies";
