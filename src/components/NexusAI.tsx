@@ -4,16 +4,19 @@ import { useServerFn } from "@tanstack/react-start";
 import { useMutation } from "@tanstack/react-query";
 import type { Movie } from "@/lib/movies";
 import { tmdbSearch } from "@/lib/tmdb.functions";
+import { aiChat } from "@/lib/ai.functions";
 import { MovieModal } from "./MovieModal";
 
 type Msg = { role: "user" | "ai"; text: string; movies?: Movie[] };
 
 const SUGGESTIONS = [
-  "Inception",
-  "Sci-fi like Interstellar",
+  "Recommend a sci-fi film",
+  "Explain the ending of Inception",
   "Top Bollywood thrillers",
-  "Best of 2024",
+  "Why is the sky blue?",
 ];
+
+const MOVIE_INTENT = /\b(movie|film|watch|recommend|suggest|trailer|cast|director|imdb|bollywood|hollywood|sci[- ]?fi|thriller|comedy|drama|horror|romance|action|anime|series|show)\b/i;
 
 export function NexusAI() {
   const [open, setOpen] = useState(false);
