@@ -11,6 +11,7 @@ import { useEffect, useState } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { Navbar } from "@/components/Navbar";
 import { NexusAI } from "@/components/NexusAI";
+import { CinematicBackground } from "@/components/CinematicBackground";
 
 import appCss from "../styles.css?url";
 
