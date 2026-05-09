@@ -52,19 +52,25 @@ export function NexusAI() {
     setMessages(next);
     setInput("");
 
+    const cinematic = CINEMA_HINT.test(text);
+    const offtopic = !cinematic && OFFTOPIC_HINT.test(text);
+
+    if (offtopic) {
+      setMessages((m) => [...m, { role: "ai", text: OFFTOPIC_REPLY }]);
+      return;
+    }
+
     const history = next
       .filter((m) => m.text)
       .map((m) => ({ role: m.role === "user" ? ("user" as const) : ("assistant" as const), content: m.text }));
 
-    const wantsMovies = MOVIE_INTENT.test(text);
-
     try {
       const [aiRes, movieRes] = await Promise.all([
         ai.mutateAsync(history).catch(() => ({ reply: "" })),
-        wantsMovies ? search.mutateAsync(text).catch(() => ({ results: [] as Movie[] })) : Promise.resolve({ results: [] as Movie[] }),
+        cinematic ? search.mutateAsync(text).catch(() => ({ results: [] as Movie[] })) : Promise.resolve({ results: [] as Movie[] }),
       ]);
       const movies = (movieRes.results || []).slice(0, 4);
-      const reply = aiRes.reply?.trim() || (movies.length ? "Here are some matches from the archive:" : "The signal flickered. Try rephrasing.");
+      const reply = aiRes.reply?.trim() || (movies.length ? "Here are some matches from the archive:" : OFFTOPIC_REPLY);
       setMessages((m) => [...m, { role: "ai", text: reply, movies: movies.length ? movies : undefined }]);
     } catch {
       setMessages((m) => [...m, { role: "ai", text: "The signal failed. Try again." }]);
