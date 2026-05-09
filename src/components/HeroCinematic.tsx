@@ -15,7 +15,12 @@ const FADE_MS = 1400;
 
 export function HeroCinematic() {
   const [active, setActive] = useState(0);
+  const [mounted, setMounted] = useState(false);
   const refs = useRef<(HTMLVideoElement | null)[]>([]);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     const id = setInterval(() => {
@@ -37,6 +42,10 @@ export function HeroCinematic() {
       }
     }
   }, [active]);
+
+  if (!mounted) {
+    return <div className="absolute inset-0 overflow-hidden bg-background" />;
+  }
 
   return (
     <div className="absolute inset-0 overflow-hidden">

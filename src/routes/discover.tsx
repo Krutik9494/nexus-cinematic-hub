@@ -34,12 +34,11 @@ function useDebounced<T>(value: T, delay = 400) {
 function Discover() {
   const [query, setQuery] = useState("");
   const [genres, setGenres] = useState<string[]>([]);
-  const [yearMin, setYearMin] = useState(2000);
+  const yearMin = 2000;
   const [yearMax, setYearMax] = useState(2026);
   const [minRating, setMinRating] = useState(0);
   const [sort, setSort] = useState<Sort>("popularity.desc");
   const [language, setLanguage] = useState<Lang>("all");
-  const [region, setRegion] = useState<"" | "IN" | "US">("");
   const [page, setPage] = useState(1);
   const [pages, setPages] = useState<Movie[][]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -55,11 +54,11 @@ function Discover() {
   useEffect(() => {
     setPage(1);
     setPages([]);
-  }, [debouncedQuery, genres, yearMin, yearMax, minRating, sort, language, region]);
+  }, [debouncedQuery, genres, yearMin, yearMax, minRating, sort, language]);
 
   const queryKey = useMemo(
-    () => ["discover", debouncedQuery, genres, yearMin, yearMax, minRating, sort, language, region, page],
-    [debouncedQuery, genres, yearMin, yearMax, minRating, sort, language, region, page],
+    () => ["discover", debouncedQuery, genres, yearMin, yearMax, minRating, sort, language, page],
+    [debouncedQuery, genres, yearMin, yearMax, minRating, sort, language, page],
   );
 
   const result = useQuery({
@@ -76,7 +75,7 @@ function Discover() {
           yearMax,
           minRating,
           language: language === "all" ? undefined : language,
-          region: language === "hi" ? "IN" : region || undefined,
+          region: language === "hi" ? "IN" : undefined,
           page,
         },
       });
@@ -119,28 +118,6 @@ function Discover() {
       </div>
 
       <div>
-        <p className="text-xs uppercase tracking-[0.25em] text-cyan mb-3">Region</p>
-        <div className="grid grid-cols-3 gap-2">
-          {[
-            { v: "" as const, label: "Global" },
-            { v: "IN" as const, label: "India" },
-            { v: "US" as const, label: "USA" },
-          ].map((r) => (
-            <button
-              key={r.label}
-              onClick={() => setRegion(r.v)}
-              className={`px-2 py-2 text-xs rounded-lg glass transition ${region === r.v ? "text-cyan glow-cyan" : "text-muted-foreground hover:text-foreground"}`}
-            >
-              {r.label}
-            </button>
-          ))}
-        </div>
-        {language === "hi" && (
-          <p className="text-[10px] text-muted-foreground mt-2">Hindi mode auto-applies India region.</p>
-        )}
-      </div>
-
-      <div>
         <p className="text-xs uppercase tracking-[0.25em] text-cyan mb-3">Genres</p>
         <div className="flex flex-wrap gap-2 max-h-48 overflow-y-auto scrollbar-hide pr-1">
           {GENRES.map((g) => (
@@ -158,10 +135,9 @@ function Discover() {
       <div>
         <p className="text-xs uppercase tracking-[0.25em] text-cyan mb-3">Year Range</p>
         <div className="flex items-center justify-between text-xs text-muted-foreground mb-2">
-          <span>{yearMin}</span><span>{yearMax}</span>
+          <span>From {yearMin}</span><span>Up to {yearMax}</span>
         </div>
-        <input type="range" min={1980} max={2026} value={yearMin} onChange={(e) => setYearMin(Math.min(+e.target.value, yearMax))} className="w-full accent-cyan" />
-        <input type="range" min={1980} max={2026} value={yearMax} onChange={(e) => setYearMax(Math.max(+e.target.value, yearMin))} className="w-full accent-cyan mt-1" />
+        <input type="range" min={2000} max={2026} value={yearMax} onChange={(e) => setYearMax(+e.target.value)} className="w-full accent-cyan" />
       </div>
 
       <div>
@@ -192,8 +168,8 @@ function Discover() {
 
       <button
         onClick={() => {
-          setGenres([]); setYearMin(2000); setYearMax(2026); setMinRating(0);
-          setQuery(""); setSort("popularity.desc"); setLanguage("all"); setRegion("");
+          setGenres([]); setYearMax(2026); setMinRating(0);
+          setQuery(""); setSort("popularity.desc"); setLanguage("all");
         }}
         className="w-full text-xs py-2 rounded-lg glass hover:text-cyan transition"
       >

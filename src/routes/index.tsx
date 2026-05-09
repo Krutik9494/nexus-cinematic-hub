@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Search, Sparkles, TrendingUp, Flame, Music } from "lucide-react";
+import { Search, Sparkles, TrendingUp, Flame, Music, Award } from "lucide-react";
 import heroBg from "@/assets/hero-bg.jpg";
 import { HeroCinematic } from "@/components/HeroCinematic";
 import { ALL_GENRES, type Movie } from "@/lib/movies";
@@ -14,6 +14,7 @@ import {
   tmdbBollywood,
   tmdbDiscover,
   tmdbSearch,
+  tmdbTopRated,
   tmdbTrending,
 } from "@/lib/tmdb.functions";
 
@@ -89,6 +90,13 @@ function Home() {
   const bollywoodFn = useServerFn(tmdbBollywood);
   const discoverFn = useServerFn(tmdbDiscover);
   const searchFn = useServerFn(tmdbSearch);
+  const topRatedFn = useServerFn(tmdbTopRated);
+
+  const topRated = useQuery({
+    queryKey: ["topRated"],
+    queryFn: () => topRatedFn(),
+    staleTime: 10 * 60_000,
+  });
 
   const trending = useQuery({
     queryKey: ["trending"],
@@ -195,7 +203,21 @@ function Home() {
         )}
       </Section>
 
-      {/* Popular / Search results */}
+      {/* Best Movies of All Time */}
+      <Section icon={<Award className="size-4" />} eyebrow="Highest Rated" title="Best Movies of All Time" color="text-cyan">
+        {topRated.isLoading ? (
+          <div className="flex gap-4 overflow-hidden">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="w-44 sm:w-52 shrink-0"><MovieCardSkeleton /></div>
+            ))}
+          </div>
+        ) : topRated.data?.length ? (
+          <Carousel movies={topRated.data} onSelect={setSelected} />
+        ) : (
+          <p className="text-muted-foreground text-sm">No top-rated movies available.</p>
+        )}
+      </Section>
+
       <section className="max-w-7xl mx-auto px-4 sm:px-6 py-10">
         <div className="flex items-end justify-between mb-6">
           <div>

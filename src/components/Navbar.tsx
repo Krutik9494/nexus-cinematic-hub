@@ -56,6 +56,7 @@ export function Navbar() {
           <Link to="/discover" className="hidden sm:block px-3 py-2 text-sm rounded-md hover:text-cyan transition" activeProps={{ className: "text-cyan" }}>Discover</Link>
           <Link to="/watchlist" className="px-3 py-2 text-sm rounded-md hover:text-cyan transition" activeProps={{ className: "text-cyan" }}>Watchlist</Link>
           <Link to="/profile" className="hidden sm:block px-3 py-2 text-sm rounded-md hover:text-cyan transition" activeProps={{ className: "text-cyan" }}>Profile</Link>
+          <Link to="/signup" className="hidden sm:inline-flex px-3 py-2 text-sm rounded-md text-cyan hover:glow-cyan transition" activeProps={{ className: "glow-cyan" }}>Sign Up</Link>
           <Link to="/settings" aria-label="Settings" className="size-9 rounded-full glass hidden sm:flex items-center justify-center hover:glow-cyan transition" activeProps={{ className: "text-cyan" }}>
             <SettingsIcon className="size-4" />
           </Link>

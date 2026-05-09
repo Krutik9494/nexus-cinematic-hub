@@ -115,10 +115,63 @@ export const tmdbDiscover = createServerFn({ method: "GET" })
 export const tmdbTrending = createServerFn({ method: "GET" }).handler(
   async (): Promise<Movie[]> => {
     const { byId } = await getGenres();
-    const json = await tmdb("/trending/movie/week");
-    return (json.results || [])
-      .slice(0, 12)
-      .map((r: any) => mapMovie(r, byId));
+    const [globalJson, hiJson] = await Promise.all([
+      tmdb("/trending/movie/week"),
+      tmdb("/discover/movie", {
+        with_original_language: "hi",
+        sort_by: "popularity.desc",
+        "vote_count.gte": 20,
+        include_adult: "false",
+      }),
+    ]);
+    const global = (globalJson.results || []).map((r: any) => mapMovie(r, byId));
+    const bolly = (hiJson.results || []).map((r: any) => mapMovie(r, byId));
+    // Interleave Hollywood + Bollywood, dedupe by id
+    const out: Movie[] = [];
+    const seen = new Set<string>();
+    const max = Math.max(global.length, bolly.length);
+    for (let i = 0; i < max && out.length < 16; i++) {
+      for (const m of [global[i], bolly[i]]) {
+        if (m && !seen.has(m.id)) {
+          seen.add(m.id);
+          out.push(m);
+        }
+      }
+    }
+    return out;
+  },
+);
+
+export const tmdbTopRated = createServerFn({ method: "GET" }).handler(
+  async (): Promise<Movie[]> => {
+    const { byId } = await getGenres();
+    const [enJson, hiJson] = await Promise.all([
+      tmdb("/discover/movie", {
+        sort_by: "vote_average.desc",
+        "vote_count.gte": 5000,
+        include_adult: "false",
+      }),
+      tmdb("/discover/movie", {
+        with_original_language: "hi",
+        sort_by: "vote_average.desc",
+        "vote_count.gte": 200,
+        include_adult: "false",
+      }),
+    ]);
+    const en = (enJson.results || []).map((r: any) => mapMovie(r, byId));
+    const hi = (hiJson.results || []).map((r: any) => mapMovie(r, byId));
+    const out: Movie[] = [];
+    const seen = new Set<string>();
+    const max = Math.max(en.length, hi.length);
+    for (let i = 0; i < max && out.length < 16; i++) {
+      for (const m of [en[i], hi[i]]) {
+        if (m && !seen.has(m.id)) {
+          seen.add(m.id);
+          out.push(m);
+        }
+      }
+    }
+    return out.sort((a, b) => b.rating - a.rating);
   },
 );
 
