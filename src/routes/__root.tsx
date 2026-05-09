@@ -11,6 +11,7 @@ import { useEffect, useState } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { Navbar } from "@/components/Navbar";
 import { NexusAI } from "@/components/NexusAI";
+import { CinematicBackground } from "@/components/CinematicBackground";
 
 import appCss from "../styles.css?url";
 
@@ -83,9 +84,12 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   return (
     <QueryClientProvider client={queryClient}>
-      <div className="min-h-screen">
+      <div className="min-h-screen relative">
+        <ClientOnly>
+          <CinematicBackground />
+        </ClientOnly>
         <Navbar />
-        <main className="pt-16">
+        <main className="pt-16 relative">
           <Outlet />
         </main>
         <ClientOnly>
