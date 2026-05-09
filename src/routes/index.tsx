@@ -82,6 +82,15 @@ function GridSkeleton({ n = 10 }: { n?: number }) {
   );
 }
 
+type MoodPick = {
+  id: string;
+  title: string;
+  year: number;
+  rating: number;
+  description: string;
+  poster: string;
+};
+
 type Mood = {
   id: string;
   label: string;
@@ -90,18 +99,60 @@ type Mood = {
   genres: string[];
   sortBy: string;
   minRating?: number;
+  picks: MoodPick[];
 };
 
 const MOODS: Mood[] = [
-  { id: "happy", label: "Happy", emoji: "😄", tagline: "Feel-good laughs and warm endings.", genres: ["Comedy", "Family"], sortBy: "popularity.desc", minRating: 6.5 },
-  { id: "sad", label: "Reflective", emoji: "🥲", tagline: "Slow burns that hit deep.", genres: ["Drama"], sortBy: "vote_average.desc", minRating: 7.5 },
-  { id: "thrill", label: "Thrilled", emoji: "😱", tagline: "Edge-of-your-seat tension.", genres: ["Thriller", "Mystery"], sortBy: "popularity.desc", minRating: 6.5 },
-  { id: "adventurous", label: "Adventurous", emoji: "🗺️", tagline: "Big worlds, bigger journeys.", genres: ["Adventure", "Action"], sortBy: "popularity.desc", minRating: 6.5 },
-  { id: "romantic", label: "Romantic", emoji: "💖", tagline: "Love, longing, and slow dances.", genres: ["Romance"], sortBy: "popularity.desc", minRating: 6.5 },
-  { id: "mindbender", label: "Mind-bent", emoji: "🧠", tagline: "Reality-warping sci-fi.", genres: ["Science Fiction"], sortBy: "vote_average.desc", minRating: 7.5 },
-  { id: "spooky", label: "Spooky", emoji: "👻", tagline: "Lights off. Volume up.", genres: ["Horror"], sortBy: "popularity.desc", minRating: 6 },
-  { id: "inspired", label: "Inspired", emoji: "🌟", tagline: "True stories that move you.", genres: ["History", "Drama"], sortBy: "vote_average.desc", minRating: 7.5 },
-  { id: "nostalgic", label: "Nostalgic", emoji: "📼", tagline: "Animated classics for all ages.", genres: ["Animation", "Family"], sortBy: "vote_average.desc", minRating: 7.5 },
+  { id: "happy", label: "Happy", emoji: "😊", tagline: "Feel-good laughs and warm endings.", genres: ["Comedy", "Family"], sortBy: "popularity.desc", minRating: 6.5, picks: [
+    { id: "mock-happy-1", title: "Paddington 2", year: 2017, rating: 8.2, description: "A lovable bear's joyful adventure spreading kindness.", poster: "https://image.tmdb.org/t/p/w500/1OFxiUTwTNOFYj6KEvK4ZWdSg7Z.jpg" },
+    { id: "mock-happy-2", title: "The Grand Budapest Hotel", year: 2014, rating: 8.1, description: "A whimsical caper through a pastel European fantasy.", poster: "https://image.tmdb.org/t/p/w500/eWdyYQreja6JGCzqHWXpWHDrrPo.jpg" },
+    { id: "mock-happy-3", title: "Amélie", year: 2001, rating: 8.3, description: "A shy Parisian dreamer engineers tiny moments of joy.", poster: "https://image.tmdb.org/t/p/w500/f0uorE7K7ggHfr8r7pUyi3jpndE.jpg" },
+  ]},
+  { id: "sad", label: "Reflective", emoji: "🤔", tagline: "Slow burns that hit deep.", genres: ["Drama"], sortBy: "vote_average.desc", minRating: 7.5, picks: [
+    { id: "mock-sad-1", title: "Manchester by the Sea", year: 2016, rating: 7.8, description: "Grief, family, and the weight of a New England winter.", poster: "https://image.tmdb.org/t/p/w500/o9VXhBb3tIRWnUcFr6MUI0aGzMt.jpg" },
+    { id: "mock-sad-2", title: "Lost in Translation", year: 2003, rating: 7.7, description: "Two strangers find quiet connection in neon Tokyo.", poster: "https://image.tmdb.org/t/p/w500/3Pl0o7p1vEhxfwkoH4z0OeDzDOL.jpg" },
+    { id: "mock-sad-3", title: "The Father", year: 2020, rating: 8.2, description: "An aching portrait of memory unraveling.", poster: "https://image.tmdb.org/t/p/w500/pr3bBE6FuiXANbozSjEC8zQjXOQ.jpg" },
+  ]},
+  { id: "thrill", label: "Thrilled", emoji: "😲", tagline: "Edge-of-your-seat tension.", genres: ["Thriller", "Mystery"], sortBy: "popularity.desc", minRating: 6.5, picks: [
+    { id: "mock-thrill-1", title: "Se7en", year: 1995, rating: 8.6, description: "Two detectives chase a killer staging the seven sins.", poster: "https://image.tmdb.org/t/p/w500/6yoghtyTpznpBik8EngEmJskVUO.jpg" },
+    { id: "mock-thrill-2", title: "Prisoners", year: 2013, rating: 8.1, description: "A father's frantic search becomes a moral abyss.", poster: "https://image.tmdb.org/t/p/w500/tuLOlDjudGFFQK5kg1yId0Ew6Wo.jpg" },
+    { id: "mock-thrill-3", title: "Gone Girl", year: 2014, rating: 8.1, description: "A vanishing wife unspools a chilling marriage.", poster: "https://image.tmdb.org/t/p/w500/ts996lKsxvjkO2yiYG0ht4qAicO.jpg" },
+  ]},
+  { id: "adventurous", label: "Adventurous", emoji: "🗺️", tagline: "Big worlds, bigger journeys.", genres: ["Adventure", "Action"], sortBy: "popularity.desc", minRating: 6.5, picks: [
+    { id: "mock-adv-1", title: "Raiders of the Lost Ark", year: 1981, rating: 8.4, description: "Whip-cracking globe-trotting pulp at its peak.", poster: "https://image.tmdb.org/t/p/w500/ceG9VzoRAVGwivFU403Wc3AHRys.jpg" },
+    { id: "mock-adv-2", title: "Mad Max: Fury Road", year: 2015, rating: 8.1, description: "A roaring desert chase painted in chrome and fire.", poster: "https://image.tmdb.org/t/p/w500/8tZYtuWezp8JbcsvHYO0O46tFbo.jpg" },
+    { id: "mock-adv-3", title: "The Fellowship of the Ring", year: 2001, rating: 8.8, description: "An epic walk into shadow with friends to remember.", poster: "https://image.tmdb.org/t/p/w500/6oom5QYQ2yQTMJIbnvbkBL9cHo6.jpg" },
+  ]},
+  { id: "romantic", label: "Romantic", emoji: "❤️", tagline: "Love, longing, and slow dances.", genres: ["Romance"], sortBy: "popularity.desc", minRating: 6.5, picks: [
+    { id: "mock-rom-1", title: "Dilwale Dulhania Le Jayenge", year: 1995, rating: 8.6, description: "A Bollywood classic where love crosses every border.", poster: "https://image.tmdb.org/t/p/w500/2CAL2433ZeIihfX1Hb2139CX0pW.jpg" },
+    { id: "mock-rom-2", title: "Pride & Prejudice", year: 2005, rating: 7.8, description: "Misunderstandings, mist-soaked moors, and yearning.", poster: "https://image.tmdb.org/t/p/w500/sGjIvtVvTlWnia2zfJfHz41vrJ7.jpg" },
+    { id: "mock-rom-3", title: "La La Land", year: 2016, rating: 8.0, description: "A jazz-lit love letter to dreams and what they cost.", poster: "https://image.tmdb.org/t/p/w500/uDO8zWDhfWwoFdKS4fzkUJt0Rf0.jpg" },
+  ]},
+  { id: "mindbender", label: "Mind-bent", emoji: "🌀", tagline: "Reality-warping sci-fi.", genres: ["Science Fiction"], sortBy: "vote_average.desc", minRating: 7.5, picks: [
+    { id: "mock-mind-1", title: "Inception", year: 2010, rating: 8.4, description: "Heists inside dreams, folded across time.", poster: "https://image.tmdb.org/t/p/w500/oYuLEt3zVCKq57qu2F8dT7NIa6f.jpg" },
+    { id: "mock-mind-2", title: "Primer", year: 2004, rating: 6.9, description: "Two engineers stumble on time travel — and themselves.", poster: "https://image.tmdb.org/t/p/w500/h0ZRUCK1Cw0NcpvhB3lN20oJZWz.jpg" },
+    { id: "mock-mind-3", title: "Everything Everywhere All at Once", year: 2022, rating: 8.0, description: "A tax-day multiverse for a tired mother.", poster: "https://image.tmdb.org/t/p/w500/w3LxiVYdWWRvEVdn5RYq6jIqkb1.jpg" },
+  ]},
+  { id: "spooky", label: "Spooky", emoji: "👻", tagline: "Lights off. Volume up.", genres: ["Horror"], sortBy: "popularity.desc", minRating: 6, picks: [
+    { id: "mock-spook-1", title: "Hereditary", year: 2018, rating: 7.3, description: "A grieving family unravels into ancestral dread.", poster: "https://image.tmdb.org/t/p/w500/p9wE8JjCUtmRQcqJxzqVj1npVlj.jpg" },
+    { id: "mock-spook-2", title: "The Conjuring", year: 2013, rating: 7.5, description: "Paranormal investigators face a quietly evil farmhouse.", poster: "https://image.tmdb.org/t/p/w500/wVYREutTvI2tmxr6ujrHT704wGF.jpg" },
+    { id: "mock-spook-3", title: "Get Out", year: 2017, rating: 7.7, description: "A weekend visit with the in-laws turns surgical.", poster: "https://image.tmdb.org/t/p/w500/tFXcEccSQMf3lfhfXKSU9iRBpa3.jpg" },
+  ]},
+  { id: "inspired", label: "Inspired", emoji: "✨", tagline: "True stories that move you.", genres: ["History", "Drama"], sortBy: "vote_average.desc", minRating: 7.5, picks: [
+    { id: "mock-insp-1", title: "The Pursuit of Happyness", year: 2006, rating: 8.0, description: "A father refuses to let poverty define his son's future.", poster: "https://image.tmdb.org/t/p/w500/3LvUbXgL8gnHTZlDvAZRyVFjMNN.jpg" },
+    { id: "mock-insp-2", title: "Hidden Figures", year: 2016, rating: 7.9, description: "Three brilliant women launch America into orbit.", poster: "https://image.tmdb.org/t/p/w500/lP5eKh8WOcPysfELrUpGhHJGZEH.jpg" },
+    { id: "mock-insp-3", title: "Soul", year: 2020, rating: 8.0, description: "A jazz teacher learns what makes a life feel alive.", poster: "https://image.tmdb.org/t/p/w500/hm58Jw4Lw8OIeECIq5qyPYhAeRJ.jpg" },
+  ]},
+  { id: "nostalgic", label: "Nostalgic", emoji: "📼", tagline: "Animated classics for all ages.", genres: ["Animation", "Family"], sortBy: "vote_average.desc", minRating: 7.5, picks: [
+    { id: "mock-nost-1", title: "Spirited Away", year: 2001, rating: 8.5, description: "A girl wanders into a bathhouse of strange spirits.", poster: "https://image.tmdb.org/t/p/w500/39wmItIWsg5sZMyRUHLkWBcuVCM.jpg" },
+    { id: "mock-nost-2", title: "Toy Story", year: 1995, rating: 8.3, description: "The toys come alive when no one is looking.", poster: "https://image.tmdb.org/t/p/w500/uXDfjJbdP4ijW5hWSBrPrlKpxab.jpg" },
+    { id: "mock-nost-3", title: "The Lion King", year: 1994, rating: 8.5, description: "A young prince finds his roar across the savanna.", poster: "https://image.tmdb.org/t/p/w500/sKCr78MXSLixwmZ8DyJLrpMsd15.jpg" },
+  ]},
+  { id: "scifi", label: "Sci-fi", emoji: "🌌", tagline: "Stars, signals, and impossible engines.", genres: ["Science Fiction"], sortBy: "popularity.desc", minRating: 7, picks: [
+    { id: "mock-sci-1", title: "Interstellar", year: 2014, rating: 8.4, description: "A father slips through wormholes to save humanity.", poster: "https://image.tmdb.org/t/p/w500/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg" },
+    { id: "mock-sci-2", title: "Dune", year: 2021, rating: 7.8, description: "A messianic heir walks into the spice and the sand.", poster: "https://image.tmdb.org/t/p/w500/d5NXSklXo0qyIYkgV94XAgMIckC.jpg" },
+    { id: "mock-sci-3", title: "Blade Runner 2049", year: 2017, rating: 8.0, description: "A replicant detective hunts the ghost of a miracle.", poster: "https://image.tmdb.org/t/p/w500/gajva2L0rPYkEWjzgFlBXCAVBE5.jpg" },
+  ]},
 ];
 
 function Home() {
