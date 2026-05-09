@@ -43,6 +43,18 @@ function Profile() {
   const items = useWatchlist();
   const ids = useMemo(() => items.map((i) => i.id), [items]);
 
+  const user = useMemo(() => {
+    try {
+      const raw = localStorage.getItem("nexus_user");
+      if (!raw) return null;
+      return JSON.parse(raw) as { name?: string; email?: string; guest?: boolean };
+    } catch {
+      return null;
+    }
+  }, []);
+  const displayName = user?.name?.trim() || (user?.guest ? "Guest Operative" : "Nexus User");
+  const initial = (displayName.charAt(0) || "N").toUpperCase();
+
   const { data: movies = [] } = useQuery({
     queryKey: ["batch", ids],
     queryFn: () => tmdbBatch({ data: { ids } }),
