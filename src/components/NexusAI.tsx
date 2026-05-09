@@ -128,9 +128,9 @@ export function NexusAI() {
               </div>
             </div>
           ))}
-          {search.isPending && (
+          {(search.isPending || ai.isPending) && (
             <div className="flex items-center gap-2 text-cyan text-xs animate-glow-pulse">
-              <span className="size-2 rounded-full bg-cyan" /> Scanning the archive…
+              <span className="size-2 rounded-full bg-cyan" /> Thinking…
             </div>
           )}
         </div>
