@@ -210,6 +210,31 @@ export const tmdbSearch = createServerFn({ method: "GET" })
     };
   });
 
+export const tmdbPosterLookup = createServerFn({ method: "GET" })
+  .inputValidator((d: unknown) =>
+    z.object({ title: z.string().min(1), year: z.number().optional() }).parse(d),
+  )
+  .handler(async ({ data }): Promise<{ poster: string | null }> => {
+    const normalizedTitle = data.title.trim().toLowerCase();
+    const json = await tmdb("/search/movie", {
+      query: data.title,
+      primary_release_year: data.year,
+      include_adult: "false",
+    });
+    const results = (json.results || []).filter((movie: any) => movie.poster_path);
+    const yearOf = (movie: any) =>
+      movie.release_date ? Number(String(movie.release_date).slice(0, 4)) : undefined;
+    const titleOf = (movie: any) =>
+      String(movie.title || movie.original_title || "").trim().toLowerCase();
+    const match =
+      results.find((movie: any) => titleOf(movie) === normalizedTitle && yearOf(movie) === data.year) ||
+      results.find((movie: any) => yearOf(movie) === data.year) ||
+      results.find((movie: any) => titleOf(movie) === normalizedTitle) ||
+      results[0];
+
+    return { poster: match?.poster_path ? `${IMG}/w780${match.poster_path}` : null };
+  });
+
 export const tmdbDetails = createServerFn({ method: "GET" })
   .inputValidator((d: unknown) => z.object({ id: z.string() }).parse(d))
   .handler(
