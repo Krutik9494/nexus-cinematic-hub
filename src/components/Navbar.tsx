@@ -2,7 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { Search, User, Film, Mic, Settings as SettingsIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { BackgroundMusic } from "@/components/BackgroundMusic";
+
 
 export function Navbar() {
   const [q, setQ] = useState("");
@@ -59,7 +59,7 @@ export function Navbar() {
           <Link to="/settings" aria-label="Settings" className="size-9 rounded-full glass hidden sm:flex items-center justify-center hover:glow-cyan transition" activeProps={{ className: "text-cyan" }}>
             <SettingsIcon className="size-4" />
           </Link>
-          <BackgroundMusic />
+          
           <button aria-label="Profile" className="size-9 rounded-full glass flex items-center justify-center hover:glow-purple transition">
             <User className="size-4 text-neon-purple" />
           </button>
