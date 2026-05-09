@@ -134,11 +134,10 @@ function Home() {
             <Sparkles className="size-3" /> Welcome to Nexus
           </div>
           <h1 className="mt-6 font-display text-5xl sm:text-7xl lg:text-8xl font-bold leading-[1.05]">
-            Your Personal <br />
-            <span className="text-gradient">Cinematic Universe</span>
+            What's your <span className="text-gradient">vibe?</span>
           </h1>
           <p className="mt-6 text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto">
-            Real-time movie data from TMDB — discover, rate, and curate films from Hollywood, Bollywood, and the world.
+            Movies that match your mood.
           </p>
 
           <div className="mt-10 max-w-2xl mx-auto relative">
