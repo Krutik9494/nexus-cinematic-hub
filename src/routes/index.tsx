@@ -203,7 +203,21 @@ function Home() {
         )}
       </Section>
 
-      {/* Popular / Search results */}
+      {/* Best Movies of All Time */}
+      <Section icon={<Award className="size-4" />} eyebrow="Highest Rated" title="Best Movies of All Time" color="text-cyan">
+        {topRated.isLoading ? (
+          <div className="flex gap-4 overflow-hidden">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="w-44 sm:w-52 shrink-0"><MovieCardSkeleton /></div>
+            ))}
+          </div>
+        ) : topRated.data?.length ? (
+          <Carousel movies={topRated.data} onSelect={setSelected} />
+        ) : (
+          <p className="text-muted-foreground text-sm">No top-rated movies available.</p>
+        )}
+      </Section>
+
       <section className="max-w-7xl mx-auto px-4 sm:px-6 py-10">
         <div className="flex items-end justify-between mb-6">
           <div>

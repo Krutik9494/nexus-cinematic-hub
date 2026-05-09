@@ -34,12 +34,11 @@ function useDebounced<T>(value: T, delay = 400) {
 function Discover() {
   const [query, setQuery] = useState("");
   const [genres, setGenres] = useState<string[]>([]);
-  const [yearMin, setYearMin] = useState(2000);
+  const yearMin = 2000;
   const [yearMax, setYearMax] = useState(2026);
   const [minRating, setMinRating] = useState(0);
   const [sort, setSort] = useState<Sort>("popularity.desc");
   const [language, setLanguage] = useState<Lang>("all");
-  const [region, setRegion] = useState<"" | "IN" | "US">("");
   const [page, setPage] = useState(1);
   const [pages, setPages] = useState<Movie[][]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
