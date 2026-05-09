@@ -1,8 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Film, Star, Eye, Heart, TrendingUp } from "lucide-react";
-import { MOVIES } from "@/lib/movies";
 import { useWatchlist } from "@/lib/watchlist-store";
+import { tmdbBatch } from "@/lib/tmdb.functions";
+import type { Movie } from "@/lib/tmdb";
 
 export const Route = createFileRoute("/profile")({
   head: () => ({
@@ -39,19 +41,29 @@ function Ring({ value, max = 10, label, sub, color = "var(--cyan)" }: { value: n
 
 function Profile() {
   const items = useWatchlist();
+  const ids = useMemo(() => items.map((i) => i.id), [items]);
+
+  const { data: movies = [] } = useQuery({
+    queryKey: ["batch", ids],
+    queryFn: () => tmdbBatch({ data: { ids } }),
+    enabled: ids.length > 0,
+  });
 
   const stats = useMemo(() => {
-    const enriched = items.map((it) => ({ it, m: MOVIES.find((x) => x.id === it.id)! })).filter((x) => x.m);
+    const map = new Map<string, Movie>(movies.map((m) => [m.id, m]));
+    const enriched = items
+      .map((it) => ({ it, m: map.get(it.id) }))
+      .filter((x): x is { it: typeof items[number]; m: Movie } => !!x.m);
     const watched = enriched.filter((x) => x.it.watched).length;
     const fav = enriched.filter((x) => x.it.favorite).length;
     const rated = enriched.filter((x) => x.it.rating > 0);
     const avg = rated.length ? rated.reduce((s, x) => s + x.it.rating, 0) / rated.length : 0;
     const genreCount: Record<string, number> = {};
-    enriched.forEach((x) => x.m.genres.forEach((g) => { genreCount[g] = (genreCount[g] || 0) + 1; }));
+    enriched.forEach((x) => x.m.genres.forEach((g: string) => { genreCount[g] = (genreCount[g] || 0) + 1; }));
     const topGenres = Object.entries(genreCount).sort((a, b) => b[1] - a[1]).slice(0, 5);
     const recent = [...enriched].sort((a, b) => b.it.addedAt - a.it.addedAt).slice(0, 8);
     return { total: enriched.length, watched, fav, avg, topGenres, recent };
-  }, [items]);
+  }, [items, movies]);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12">
