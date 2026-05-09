@@ -70,7 +70,7 @@ function Home() {
           </div>
 
           <div className="mt-8 flex flex-wrap justify-center gap-2">
-            {GENRES.map((g) => (
+            {ALL_GENRES.map((g) => (
               <button key={g} onClick={() => setGenre(g)}
                 className={`px-4 py-1.5 text-xs rounded-full glass neon-border transition ${genre === g ? "text-cyan glow-cyan" : "text-muted-foreground hover:text-foreground"}`}>
                 {g}
