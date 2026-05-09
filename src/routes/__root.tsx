@@ -82,18 +82,25 @@ function ClientOnly({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
-function AuthGate() {
+function AuthGate({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();
   const location = useLocation();
+  const isSignup = location.pathname === "/signup";
+  const [ready, setReady] = useState(false);
+
   useEffect(() => {
-    try {
-      const u = localStorage.getItem("nexus_user");
-      if (!u && location.pathname !== "/signup") {
-        navigate({ to: "/signup", replace: true });
-      }
-    } catch {}
-  }, [location.pathname, navigate]);
-  return null;
+    let authed = false;
+    try { authed = !!localStorage.getItem("nexus_user"); } catch {}
+    if (!authed && !isSignup) {
+      navigate({ to: "/signup", replace: true });
+    } else {
+      setReady(true);
+    }
+  }, [location.pathname, navigate, isSignup]);
+
+  if (isSignup) return <>{children}</>;
+  if (!ready) return null;
+  return <>{children}</>;
 }
 
 function RootComponent() {
@@ -105,11 +112,14 @@ function RootComponent() {
       <div className="min-h-screen relative">
         <ClientOnly>
           <CinematicBackground />
-          <AuthGate />
         </ClientOnly>
         {!isSignup && <Navbar />}
         <main className={isSignup ? "relative" : "pt-16 relative"}>
-          <Outlet />
+          <ClientOnly>
+            <AuthGate>
+              <Outlet />
+            </AuthGate>
+          </ClientOnly>
         </main>
         <ClientOnly>
           <NexusAI />
