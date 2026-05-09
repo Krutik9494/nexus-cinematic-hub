@@ -1,0 +1,14 @@
+{
+  "name": "NEXUS — Cinematic Universe",
+  "short_name": "NEXUS",
+  "description": "Discover, track, and rate your favorite movies in a futuristic cinematic hub.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0612",
+  "theme_color": "#0a0612",
+  "icons": [
+    { "src": "/favicon-32.png", "sizes": "32x32", "type": "image/png" },
+    { "src": "/favicon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/apple-touch-icon.png", "sizes": "180x180", "type": "image/png" }
+  ]
+}
