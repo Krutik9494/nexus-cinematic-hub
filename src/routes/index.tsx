@@ -419,3 +419,30 @@ function MoodPicksSection({ mood, onClose }: { mood: Mood; onClose: () => void }
     </section>
   );
 }
+
+const POSTER_FALLBACK =
+  "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=600&h=900&fit=crop&q=80";
+
+function PickPoster({ src, title }: { src: string; title: string }) {
+  const [loaded, setLoaded] = useState(false);
+  const [errored, setErrored] = useState(false);
+  const finalSrc = errored ? POSTER_FALLBACK : src;
+  return (
+    <>
+      {!loaded && (
+        <div className="absolute inset-0 animate-pulse bg-gradient-to-br from-muted/40 to-muted/10" />
+      )}
+      <img
+        src={finalSrc}
+        alt={title}
+        loading="lazy"
+        onLoad={() => setLoaded(true)}
+        onError={() => {
+          setErrored(true);
+          setLoaded(true);
+        }}
+        className="size-full object-cover aspect-[2/3] transition-transform duration-500 group-hover:scale-110"
+      />
+    </>
+  );
+}
