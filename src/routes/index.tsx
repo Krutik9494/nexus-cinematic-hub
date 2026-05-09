@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Search, Sparkles, TrendingUp, Flame, Music } from "lucide-react";
 import heroBg from "@/assets/hero-bg.jpg";
-import heroVideo from "@/assets/hero-cinematic.mp4.asset.json";
+import { HeroCinematic } from "@/components/HeroCinematic";
 import { ALL_GENRES, type Movie } from "@/lib/movies";
 import { MovieCard, MovieCardSkeleton } from "@/components/MovieCard";
 import { MovieModal } from "@/components/MovieModal";
@@ -119,16 +119,8 @@ function Home() {
   return (
     <div>
       <section className="relative min-h-[88vh] flex items-center justify-center overflow-hidden">
-        <video
-          src={heroVideo.url}
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="auto"
-          poster={heroBg}
-          className="absolute inset-0 size-full object-cover"
-        />
+        <HeroCinematic />
+        <img src={heroBg} alt="" className="hidden" aria-hidden />
         <div className="absolute inset-0 bg-gradient-to-b from-background/70 via-background/50 to-background" />
         <div
           className="absolute inset-0"
