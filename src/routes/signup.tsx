@@ -60,11 +60,11 @@ function SignupPage() {
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass neon-border text-xs uppercase tracking-[0.3em] text-cyan animate-glow-pulse">
             <Sparkles className="size-3" /> Join Nexus
           </div>
-          <h1 className="mt-4 font-display text-4xl sm:text-5xl font-bold">
-            Enter the <span className="text-gradient">universe</span>
+          <h1 className="mt-4 font-display text-4xl sm:text-5xl font-bold leading-tight">
+            Enter the <span className="text-gradient">Cinematic Universe</span>
           </h1>
           <p className="mt-3 text-sm text-muted-foreground">
-            Create your account to track and rate movies — or skip ahead as a guest.
+            Create your account to build your personal watchlist, rate movies & get smart recommendations — or continue as a guest.
           </p>
         </div>
 
