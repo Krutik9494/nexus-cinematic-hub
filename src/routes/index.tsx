@@ -84,6 +84,7 @@ function GridSkeleton({ n = 10 }: { n?: number }) {
 
 type MoodPick = {
   id: string;
+  tmdbId: number;
   title: string;
   year: number;
   rating: number;
@@ -104,14 +105,14 @@ type Mood = {
 
 const MOODS: Mood[] = [
   { id: "happy", label: "Happy", emoji: "😊", tagline: "Feel-good laughs and warm endings.", genres: ["Comedy", "Family"], sortBy: "popularity.desc", minRating: 6.5, picks: [
-    { id: "mock-happy-1", title: "Paddington 2", year: 2017, rating: 8.2, description: "A lovable bear's joyful adventure spreading kindness.", poster: "https://image.tmdb.org/t/p/w500/1OFxiUTwTNOFYj6KEvK4ZWdSg7Z.jpg" },
-    { id: "mock-happy-2", title: "The Grand Budapest Hotel", year: 2014, rating: 8.1, description: "A whimsical caper through a pastel European fantasy.", poster: "https://image.tmdb.org/t/p/w500/eWdyYQreja6JGCzqHWXpWHDrrPo.jpg" },
-    { id: "mock-happy-3", title: "Amélie", year: 2001, rating: 8.3, description: "A shy Parisian dreamer engineers tiny moments of joy.", poster: "https://image.tmdb.org/t/p/w500/f0uorE7K7ggHfr8r7pUyi3jpndE.jpg" },
+    { id: "mock-happy-1", tmdbId: 346648, title: "Paddington 2", year: 2017, rating: 8.2, description: "A lovable bear's joyful adventure spreading kindness.", poster: "https://image.tmdb.org/t/p/w500/1OFxiUTwTNOFYj6KEvK4ZWdSg7Z.jpg" },
+    { id: "mock-happy-2", tmdbId: 120467, title: "The Grand Budapest Hotel", year: 2014, rating: 8.1, description: "A whimsical caper through a pastel European fantasy.", poster: "https://image.tmdb.org/t/p/w500/eWdyYQreja6JGCzqHWXpWHDrrPo.jpg" },
+    { id: "mock-happy-3", tmdbId: 194, title: "Amélie", year: 2001, rating: 8.3, description: "A shy Parisian dreamer engineers tiny moments of joy.", poster: "https://image.tmdb.org/t/p/w500/f0uorE7K7ggHfr8r7pUyi3jpndE.jpg" },
   ]},
   { id: "sad", label: "Reflective", emoji: "🤔", tagline: "Slow burns that hit deep.", genres: ["Drama"], sortBy: "vote_average.desc", minRating: 7.5, picks: [
-    { id: "mock-sad-1", title: "Manchester by the Sea", year: 2016, rating: 7.8, description: "Grief, family, and the weight of a New England winter.", poster: "https://image.tmdb.org/t/p/w500/o9VXhBb3tIRWnUcFr6MUI0aGzMt.jpg" },
-    { id: "mock-sad-2", title: "Lost in Translation", year: 2003, rating: 7.7, description: "Two strangers find quiet connection in neon Tokyo.", poster: "https://image.tmdb.org/t/p/w500/3Pl0o7p1vEhxfwkoH4z0OeDzDOL.jpg" },
-    { id: "mock-sad-3", title: "The Father", year: 2020, rating: 8.2, description: "An aching portrait of memory unraveling.", poster: "https://image.tmdb.org/t/p/w500/pr3bBE6FuiXANbozSjEC8zQjXOQ.jpg" },
+    { id: "mock-sad-1", tmdbId: 334541, title: "Manchester by the Sea", year: 2016, rating: 7.8, description: "Grief, family, and the weight of a New England winter.", poster: "https://image.tmdb.org/t/p/w500/o9VXhBb3tIRWnUcFr6MUI0aGzMt.jpg" },
+    { id: "mock-sad-2", tmdbId: 153, title: "Lost in Translation", year: 2003, rating: 7.7, description: "Two strangers find quiet connection in neon Tokyo.", poster: "https://image.tmdb.org/t/p/w500/3Pl0o7p1vEhxfwkoH4z0OeDzDOL.jpg" },
+    { id: "mock-sad-3", tmdbId: 600354, title: "The Father", year: 2020, rating: 8.2, description: "An aching portrait of memory unraveling.", poster: "https://image.tmdb.org/t/p/w500/pr3bBE6FuiXANbozSjEC8zQjXOQ.jpg" },
   ]},
   { id: "thrill", label: "Thrilled", emoji: "😲", tagline: "Edge-of-your-seat tension.", genres: ["Thriller", "Mystery"], sortBy: "popularity.desc", minRating: 6.5, picks: [
     { id: "mock-thrill-1", title: "Se7en", year: 1995, rating: 8.6, description: "Two detectives chase a killer staging the seven sins.", poster: "https://image.tmdb.org/t/p/w500/6yoghtyTpznpBik8EngEmJskVUO.jpg" },
