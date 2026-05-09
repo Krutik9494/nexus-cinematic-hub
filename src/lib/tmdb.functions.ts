@@ -212,12 +212,21 @@ export const tmdbSearch = createServerFn({ method: "GET" })
 
 export const tmdbPosterLookup = createServerFn({ method: "GET" })
   .inputValidator((d: unknown) =>
-    z.object({ title: z.string().min(1), year: z.number().optional() }).parse(d),
+    z
+      .object({ id: z.number().optional(), title: z.string().min(1).optional(), year: z.number().optional() })
+      .refine((value) => value.id || value.title, "TMDB id or title is required")
+      .parse(d),
   )
   .handler(async ({ data }): Promise<{ poster: string | null }> => {
-    const normalizedTitle = data.title.trim().toLowerCase();
+    if (data.id) {
+      const movie = await tmdb(`/movie/${data.id}`);
+      return { poster: movie?.poster_path ? `${IMG}/w780${movie.poster_path}` : null };
+    }
+
+    const title = data.title || "";
+    const normalizedTitle = title.trim().toLowerCase();
     const json = await tmdb("/search/movie", {
-      query: data.title,
+      query: title,
       primary_release_year: data.year,
       include_adult: "false",
     });
