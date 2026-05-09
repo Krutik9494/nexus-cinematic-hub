@@ -1,64 +1,154 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Search, SlidersHorizontal, X } from "lucide-react";
-import { GENRES, MOVIES, type Movie } from "@/lib/movies";
-import { MovieCard } from "@/components/MovieCard";
+import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { GENRES, type Movie } from "@/lib/movies";
+import { MovieCard, MovieCardSkeleton } from "@/components/MovieCard";
 import { MovieModal } from "@/components/MovieModal";
 import { ParticleField } from "@/components/ParticleField";
+import { tmdbDiscover, tmdbSearch } from "@/lib/tmdb.functions";
 
 export const Route = createFileRoute("/discover")({
   head: () => ({
     meta: [
       { title: "Discover — NEXUS" },
-      { name: "description", content: "Advanced filtering for the full cinematic catalog." },
+      { name: "description", content: "Advanced TMDB filtering across Hollywood, Bollywood and beyond." },
     ],
   }),
   component: Discover,
 });
 
-const PAGE = 8;
-type Sort = "popularity" | "rating" | "newest";
+type Sort = "popularity.desc" | "vote_average.desc" | "primary_release_date.desc";
+type Lang = "all" | "en" | "hi";
+
+function useDebounced<T>(value: T, delay = 400) {
+  const [v, setV] = useState(value);
+  useEffect(() => {
+    const t = setTimeout(() => setV(value), delay);
+    return () => clearTimeout(t);
+  }, [value, delay]);
+  return v;
+}
 
 function Discover() {
   const [query, setQuery] = useState("");
   const [genres, setGenres] = useState<string[]>([]);
-  const [yearMin, setYearMin] = useState(1980);
+  const [yearMin, setYearMin] = useState(2000);
   const [yearMax, setYearMax] = useState(2026);
   const [minRating, setMinRating] = useState(0);
-  const [sort, setSort] = useState<Sort>("popularity");
-  const [limit, setLimit] = useState(PAGE);
-  const [selected, setSelected] = useState<Movie | null>(null);
+  const [sort, setSort] = useState<Sort>("popularity.desc");
+  const [language, setLanguage] = useState<Lang>("all");
+  const [region, setRegion] = useState<"" | "IN" | "US">("");
+  const [page, setPage] = useState(1);
+  const [pages, setPages] = useState<Movie[][]>([]);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedInitial, setSelectedInitial] = useState<Movie | null>(null);
   const [filterOpen, setFilterOpen] = useState(false);
 
+  const debouncedQuery = useDebounced(query.trim(), 400);
+
+  const discoverFn = useServerFn(tmdbDiscover);
+  const searchFn = useServerFn(tmdbSearch);
+
+  // Reset pagination when filters change
+  useEffect(() => {
+    setPage(1);
+    setPages([]);
+  }, [debouncedQuery, genres, yearMin, yearMax, minRating, sort, language, region]);
+
+  const queryKey = useMemo(
+    () => ["discover", debouncedQuery, genres, yearMin, yearMax, minRating, sort, language, region, page],
+    [debouncedQuery, genres, yearMin, yearMax, minRating, sort, language, region, page],
+  );
+
+  const result = useQuery({
+    queryKey,
+    queryFn: async () => {
+      if (debouncedQuery) {
+        return searchFn({ data: { query: debouncedQuery, page } });
+      }
+      return discoverFn({
+        data: {
+          sortBy: sort,
+          genres: genres.length ? genres : undefined,
+          yearMin,
+          yearMax,
+          minRating,
+          language: language === "all" ? undefined : language,
+          region: language === "hi" ? "IN" : region || undefined,
+          page,
+        },
+      });
+    },
+    staleTime: 60_000,
+  });
+
+  useEffect(() => {
+    if (result.data) {
+      setPages((prev) => {
+        const next = [...prev];
+        next[result.data.page - 1] = result.data.results;
+        return next;
+      });
+    }
+  }, [result.data]);
+
+  const visible = pages.flat();
+  const total = result.data?.totalResults ?? visible.length;
+  const hasMore = result.data ? result.data.page < result.data.totalPages : false;
+
   const toggleGenre = (g: string) =>
-    setGenres((prev) => prev.includes(g) ? prev.filter((x) => x !== g) : [...prev, g]);
-
-  const filtered = useMemo(() => {
-    const list = MOVIES.filter((m) => {
-      if (query && !m.title.toLowerCase().includes(query.toLowerCase())) return false;
-      if (genres.length && !genres.some((g) => m.genres.includes(g))) return false;
-      if (m.year < yearMin || m.year > yearMax) return false;
-      if (m.rating < minRating) return false;
-      return true;
-    });
-    list.sort((a, b) => {
-      if (sort === "rating") return b.rating - a.rating;
-      if (sort === "newest") return b.year - a.year;
-      return b.popularity - a.popularity;
-    });
-    return list;
-  }, [query, genres, yearMin, yearMax, minRating, sort]);
-
-  const visible = filtered.slice(0, limit);
+    setGenres((prev) => (prev.includes(g) ? prev.filter((x) => x !== g) : [...prev, g]));
 
   const FilterPanel = (
     <div className="glass neon-border rounded-2xl p-5 space-y-6 sticky top-20">
       <div>
+        <p className="text-xs uppercase tracking-[0.25em] text-cyan mb-3">Language</p>
+        <div className="grid grid-cols-3 gap-2">
+          {(["all", "en", "hi"] as Lang[]).map((l) => (
+            <button
+              key={l}
+              onClick={() => setLanguage(l)}
+              className={`px-2 py-2 text-xs rounded-lg glass uppercase tracking-wider transition ${language === l ? "text-cyan glow-cyan" : "text-muted-foreground hover:text-foreground"}`}
+            >
+              {l === "all" ? "All" : l === "en" ? "English" : "Hindi"}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div>
+        <p className="text-xs uppercase tracking-[0.25em] text-cyan mb-3">Region</p>
+        <div className="grid grid-cols-3 gap-2">
+          {[
+            { v: "" as const, label: "Global" },
+            { v: "IN" as const, label: "India" },
+            { v: "US" as const, label: "USA" },
+          ].map((r) => (
+            <button
+              key={r.label}
+              onClick={() => setRegion(r.v)}
+              className={`px-2 py-2 text-xs rounded-lg glass transition ${region === r.v ? "text-cyan glow-cyan" : "text-muted-foreground hover:text-foreground"}`}
+            >
+              {r.label}
+            </button>
+          ))}
+        </div>
+        {language === "hi" && (
+          <p className="text-[10px] text-muted-foreground mt-2">Hindi mode auto-applies India region.</p>
+        )}
+      </div>
+
+      <div>
         <p className="text-xs uppercase tracking-[0.25em] text-cyan mb-3">Genres</p>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2 max-h-48 overflow-y-auto scrollbar-hide pr-1">
           {GENRES.map((g) => (
-            <button key={g} onClick={() => toggleGenre(g)}
-              className={`px-3 py-1 text-xs rounded-full glass border transition ${genres.includes(g) ? "text-cyan glow-cyan border-cyan/60" : "text-muted-foreground border-transparent hover:text-foreground"}`}>
+            <button
+              key={g}
+              onClick={() => toggleGenre(g)}
+              className={`px-3 py-1 text-xs rounded-full glass border transition ${genres.includes(g) ? "text-cyan glow-cyan border-cyan/60" : "text-muted-foreground border-transparent hover:text-foreground"}`}
+            >
               {g}
             </button>
           ))}
@@ -75,24 +165,36 @@ function Discover() {
       </div>
 
       <div>
-        <p className="text-xs uppercase tracking-[0.25em] text-cyan mb-3">Min Rating: <span className="text-foreground">{minRating.toFixed(1)}</span></p>
+        <p className="text-xs uppercase tracking-[0.25em] text-cyan mb-3">
+          Min Rating: <span className="text-foreground">{minRating.toFixed(1)}</span>
+        </p>
         <input type="range" min={0} max={10} step={0.5} value={minRating} onChange={(e) => setMinRating(+e.target.value)} className="w-full accent-cyan" />
       </div>
 
       <div>
         <p className="text-xs uppercase tracking-[0.25em] text-cyan mb-3">Sort By</p>
         <div className="grid grid-cols-3 gap-2">
-          {(["popularity", "rating", "newest"] as Sort[]).map((s) => (
-            <button key={s} onClick={() => setSort(s)}
-              className={`px-2 py-2 text-xs rounded-lg glass capitalize transition ${sort === s ? "text-cyan glow-cyan" : "text-muted-foreground hover:text-foreground"}`}>
-              {s}
+          {([
+            ["popularity.desc", "Popular"],
+            ["vote_average.desc", "Rating"],
+            ["primary_release_date.desc", "Newest"],
+          ] as [Sort, string][]).map(([s, label]) => (
+            <button
+              key={s}
+              onClick={() => setSort(s)}
+              className={`px-2 py-2 text-xs rounded-lg glass transition ${sort === s ? "text-cyan glow-cyan" : "text-muted-foreground hover:text-foreground"}`}
+            >
+              {label}
             </button>
           ))}
         </div>
       </div>
 
       <button
-        onClick={() => { setGenres([]); setYearMin(1980); setYearMax(2026); setMinRating(0); setQuery(""); setSort("popularity"); }}
+        onClick={() => {
+          setGenres([]); setYearMin(2000); setYearMax(2026); setMinRating(0);
+          setQuery(""); setSort("popularity.desc"); setLanguage("all"); setRegion("");
+        }}
         className="w-full text-xs py-2 rounded-lg glass hover:text-cyan transition"
       >
         Reset Filters
@@ -114,10 +216,13 @@ function Discover() {
           <div className="flex-1 glass neon-border rounded-full flex items-center px-5 py-3">
             <Search className="size-5 text-cyan" />
             <input
-              value={query} onChange={(e) => { setQuery(e.target.value); setLimit(PAGE); }}
+              value={query} onChange={(e) => setQuery(e.target.value)}
               placeholder="Search the archive…"
               className="flex-1 bg-transparent outline-none px-4 text-base placeholder:text-muted-foreground"
             />
+            {result.isFetching && (
+              <span className="text-[10px] text-cyan uppercase tracking-widest animate-glow-pulse">Loading</span>
+            )}
           </div>
           <button onClick={() => setFilterOpen(true)} className="lg:hidden size-12 rounded-full glass neon-border flex items-center justify-center">
             <SlidersHorizontal className="size-5 text-cyan" />
@@ -128,8 +233,14 @@ function Discover() {
           <aside className="hidden lg:block">{FilterPanel}</aside>
 
           <main>
-            <p className="text-sm text-muted-foreground mb-4">{filtered.length} {filtered.length === 1 ? "result" : "results"}</p>
-            {visible.length === 0 ? (
+            <p className="text-sm text-muted-foreground mb-4">{total.toLocaleString()} {total === 1 ? "result" : "results"}</p>
+
+            {result.isError && pages.length === 0 ? (
+              <div className="glass neon-border rounded-2xl p-10 text-center">
+                <p className="text-destructive font-semibold">Could not reach TMDB.</p>
+                <p className="text-muted-foreground text-sm mt-2">Verify your TMDB_API_KEY and try again.</p>
+              </div>
+            ) : visible.length === 0 && !result.isLoading ? (
               <div className="glass neon-border rounded-2xl p-16 text-center relative overflow-hidden">
                 <div className="absolute inset-0 grid-bg opacity-30" />
                 <div className="relative">
@@ -143,12 +254,24 @@ function Discover() {
             ) : (
               <>
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
-                  {visible.map((m) => <MovieCard key={m.id} movie={m} onClick={() => setSelected(m)} />)}
+                  {visible.map((m) => (
+                    <MovieCard
+                      key={m.id}
+                      movie={m}
+                      onClick={() => { setSelectedInitial(m); setSelectedId(m.id); }}
+                    />
+                  ))}
+                  {result.isLoading && Array.from({ length: 8 }).map((_, i) => <MovieCardSkeleton key={`s-${i}`} />)}
                 </div>
-                {limit < filtered.length && (
+                {hasMore && (
                   <div className="text-center mt-10">
-                    <button onClick={() => setLimit((l) => l + PAGE)} className="px-8 py-3 rounded-full font-semibold animate-glow-pulse" style={{ background: "var(--gradient-neon)", color: "var(--background)", boxShadow: "var(--shadow-glow-cyan)" }}>
-                      Load More
+                    <button
+                      disabled={result.isFetching}
+                      onClick={() => setPage((p) => p + 1)}
+                      className="px-8 py-3 rounded-full font-semibold animate-glow-pulse disabled:opacity-60"
+                      style={{ background: "var(--gradient-neon)", color: "var(--background)", boxShadow: "var(--shadow-glow-cyan)" }}
+                    >
+                      {result.isFetching ? "Loading…" : "Load More"}
                     </button>
                   </div>
                 )}
@@ -167,7 +290,12 @@ function Discover() {
           </div>
         )}
 
-        <MovieModal movie={selected} onClose={() => setSelected(null)} />
+        <MovieModal
+          movieId={selectedId}
+          initial={selectedInitial}
+          onClose={() => setSelectedId(null)}
+          onSwitch={(m) => { setSelectedInitial(m); setSelectedId(m.id); }}
+        />
       </div>
     </div>
   );

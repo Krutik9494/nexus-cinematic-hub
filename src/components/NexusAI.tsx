@@ -1,30 +1,19 @@
 import { useEffect, useRef, useState } from "react";
 import { Sparkles, Send, X, Bot } from "lucide-react";
-import { MOVIES, type Movie } from "@/lib/movies";
+import { useServerFn } from "@tanstack/react-start";
+import { useMutation } from "@tanstack/react-query";
+import type { Movie } from "@/lib/movies";
+import { tmdbSearch } from "@/lib/tmdb.functions";
 import { MovieModal } from "./MovieModal";
 
 type Msg = { role: "user" | "ai"; text: string; movies?: Movie[] };
 
 const SUGGESTIONS = [
-  "What should I watch tonight?",
+  "Inception",
   "Sci-fi like Interstellar",
-  "Mind-bending thrillers",
-  "Best movies of 2024",
+  "Top Bollywood thrillers",
+  "Best of 2024",
 ];
-
-function pickMovies(query: string): Movie[] {
-  const q = query.toLowerCase();
-  const scored = MOVIES.map((m) => {
-    let score = Math.random();
-    if (m.genres.some((g) => q.includes(g.toLowerCase()))) score += 5;
-    if (q.includes(m.title.toLowerCase().split(":")[0])) score += 8;
-    if (q.includes("2024") && m.year === 2024) score += 4;
-    if (q.includes("sci")) score += m.genres.includes("Sci-Fi") ? 3 : 0;
-    if (q.includes("thriller")) score += m.genres.includes("Thriller") ? 3 : 0;
-    return { m, score };
-  }).sort((a, b) => b.score - a.score);
-  return scored.slice(0, 4).map((x) => x.m);
-}
 
 export function NexusAI() {
   const [open, setOpen] = useState(false);
@@ -32,26 +21,40 @@ export function NexusAI() {
   const [messages, setMessages] = useState<Msg[]>([
     { role: "ai", text: "I'm NEXUS AI. Tell me what you're in the mood for, and I'll curate the perfect transmissions." },
   ]);
-  const [selected, setSelected] = useState<Movie | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedInitial, setSelectedInitial] = useState<Movie | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  const searchFn = useServerFn(tmdbSearch);
+  const search = useMutation({
+    mutationFn: (query: string) => searchFn({ data: { query } }),
+  });
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, open]);
 
-  const send = (text: string) => {
+  const send = async (text: string) => {
     if (!text.trim()) return;
-    const userMsg: Msg = { role: "user", text };
-    setMessages((m) => [...m, userMsg]);
+    setMessages((m) => [...m, { role: "user", text }]);
     setInput("");
-    setTimeout(() => {
-      const movies = pickMovies(text);
-      setMessages((m) => [...m, {
-        role: "ai",
-        text: `Based on your signal, I found ${movies.length} cinematic matches:`,
-        movies,
-      }]);
-    }, 600);
+    try {
+      const res = await search.mutateAsync(text);
+      const movies = res.results.slice(0, 4);
+      setMessages((m) => [
+        ...m,
+        movies.length
+          ? { role: "ai", text: `I found ${movies.length} cinematic matches for you:`, movies }
+          : { role: "ai", text: "No matches in the archive. Try another signal." },
+      ]);
+    } catch {
+      setMessages((m) => [...m, { role: "ai", text: "The signal failed. Try again." }]);
+    }
+  };
+
+  const openMovie = (m: Movie) => {
+    setSelectedInitial(m);
+    setSelectedId(m.id);
   };
 
   return (
@@ -97,11 +100,11 @@ export function NexusAI() {
                 {m.movies && (
                   <div className="grid grid-cols-2 gap-2">
                     {m.movies.map((mv) => (
-                      <button key={mv.id} onClick={() => setSelected(mv)} className="text-left rounded-lg overflow-hidden glass neon-border hover:glow-cyan transition">
+                      <button key={mv.id} onClick={() => openMovie(mv)} className="text-left rounded-lg overflow-hidden glass neon-border hover:glow-cyan transition">
                         <div className="aspect-[2/3]"><img src={mv.poster} alt={mv.title} className="size-full object-cover" /></div>
                         <div className="p-2">
                           <p className="text-xs font-semibold truncate">{mv.title}</p>
-                          <p className="text-[10px] text-muted-foreground">{mv.year} · ★ {mv.rating.toFixed(1)}</p>
+                          <p className="text-[10px] text-muted-foreground">{mv.year || "—"} · ★ {mv.rating.toFixed(1)}</p>
                         </div>
                       </button>
                     ))}
@@ -110,6 +113,11 @@ export function NexusAI() {
               </div>
             </div>
           ))}
+          {search.isPending && (
+            <div className="flex items-center gap-2 text-cyan text-xs animate-glow-pulse">
+              <span className="size-2 rounded-full bg-cyan" /> Scanning the archive…
+            </div>
+          )}
         </div>
 
         <div className="p-4 border-t space-y-3">
@@ -133,7 +141,12 @@ export function NexusAI() {
         </div>
       </div>
 
-      <MovieModal movie={selected} onClose={() => setSelected(null)} />
+      <MovieModal
+        movieId={selectedId}
+        initial={selectedInitial}
+        onClose={() => setSelectedId(null)}
+        onSwitch={(m) => { setSelectedInitial(m); setSelectedId(m.id); }}
+      />
     </>
   );
 }
