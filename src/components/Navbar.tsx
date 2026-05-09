@@ -59,9 +59,7 @@ export function Navbar() {
           <Link to="/settings" aria-label="Settings" className="size-9 rounded-full glass hidden sm:flex items-center justify-center hover:glow-cyan transition" activeProps={{ className: "text-cyan" }}>
             <SettingsIcon className="size-4" />
           </Link>
-          <button onClick={toggle} aria-label="Toggle theme" className="size-9 rounded-full glass flex items-center justify-center hover:glow-cyan transition">
-            {theme === "dark" ? <Moon className="size-4 text-cyan" /> : <Sun className="size-4 text-cyan" />}
-          </button>
+          <BackgroundMusic />
           <button aria-label="Profile" className="size-9 rounded-full glass flex items-center justify-center hover:glow-purple transition">
             <User className="size-4 text-neon-purple" />
           </button>
