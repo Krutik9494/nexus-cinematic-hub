@@ -383,7 +383,7 @@ function MoodPicksSection({ mood, onClose }: { mood: Mood; onClose: () => void }
             return (
               <div key={p.id} className="group rounded-2xl overflow-hidden glass neon-border transition hover:-translate-y-1 hover:glow-cyan">
                 <div className="aspect-[2/3] overflow-hidden relative">
-                  <PickPoster title={p.title} src={p.poster} />
+                  <PickPoster title={p.title} year={p.year} src={p.poster} />
                   <div className="absolute inset-0 bg-gradient-to-t from-background via-background/30 to-transparent" />
                   <div className="absolute top-2 right-2 glass rounded-full px-2 py-0.5 flex items-center gap-1 text-xs">
                     <Star className="size-3 fill-cyan text-cyan" />
@@ -423,16 +423,30 @@ function MoodPicksSection({ mood, onClose }: { mood: Mood; onClose: () => void }
 const POSTER_FALLBACK =
   "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=600&h=900&fit=crop&q=80";
 
-function PickPoster({ src, title }: { src: string; title: string }) {
+function PickPoster({ src, title, year }: { src: string; title: string; year?: number }) {
+  const searchFn = useServerFn(tmdbSearch);
+  const { data: tmdbPoster } = useQuery({
+    queryKey: ["pickPoster", title, year],
+    queryFn: async () => {
+      const res = await searchFn({ data: { query: title } });
+      const match =
+        res.results.find((m) => year && m.year === year) || res.results[0];
+      return match?.poster || null;
+    },
+    staleTime: 60 * 60_000,
+  });
+
   const [loaded, setLoaded] = useState(false);
   const [errored, setErrored] = useState(false);
-  const finalSrc = errored ? POSTER_FALLBACK : src;
+  const finalSrc = errored ? POSTER_FALLBACK : tmdbPoster || src;
+
   return (
     <>
       {!loaded && (
         <div className="absolute inset-0 animate-pulse bg-gradient-to-br from-muted/40 to-muted/10" />
       )}
       <img
+        key={finalSrc}
         src={finalSrc}
         alt={title}
         loading="lazy"
