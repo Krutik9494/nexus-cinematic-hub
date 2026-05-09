@@ -2,7 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { Search, User, Film, Mic, Settings as SettingsIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { BackgroundMusic } from "@/components/BackgroundMusic";
+
 
 export function Navbar() {
   const [q, setQ] = useState("");
