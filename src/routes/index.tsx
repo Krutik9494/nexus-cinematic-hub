@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Search, Sparkles, TrendingUp, Flame, Music } from "lucide-react";
 import heroBg from "@/assets/hero-bg.jpg";
+import heroVideo from "@/assets/hero-cinematic.mp4.asset.json";
 import { ALL_GENRES, type Movie } from "@/lib/movies";
 import { MovieCard, MovieCardSkeleton } from "@/components/MovieCard";
 import { MovieModal } from "@/components/MovieModal";
