@@ -1,11 +1,10 @@
 import { Link } from "@tanstack/react-router";
-import { Search, Moon, Sun, User, Film, Mic, Settings as SettingsIcon } from "lucide-react";
+import { Search, User, Film, Mic, Settings as SettingsIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { useTheme } from "@/lib/theme-store";
 import { toast } from "sonner";
+import { BackgroundMusic } from "@/components/BackgroundMusic";
 
 export function Navbar() {
-  const { theme, toggle } = useTheme();
   const [q, setQ] = useState("");
   const [listening, setListening] = useState(false);
   const recRef = useRef<any>(null);
