@@ -383,7 +383,7 @@ function MoodPicksSection({ mood, onClose }: { mood: Mood; onClose: () => void }
             return (
               <div key={p.id} className="group rounded-2xl overflow-hidden glass neon-border transition hover:-translate-y-1 hover:glow-cyan">
                 <div className="aspect-[2/3] overflow-hidden relative">
-                  <img src={p.poster} alt={p.title} loading="lazy" className="size-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                  <PickPoster title={p.title} src={p.poster} />
                   <div className="absolute inset-0 bg-gradient-to-t from-background via-background/30 to-transparent" />
                   <div className="absolute top-2 right-2 glass rounded-full px-2 py-0.5 flex items-center gap-1 text-xs">
                     <Star className="size-3 fill-cyan text-cyan" />
@@ -417,5 +417,32 @@ function MoodPicksSection({ mood, onClose }: { mood: Mood; onClose: () => void }
         </div>
       </div>
     </section>
+  );
+}
+
+const POSTER_FALLBACK =
+  "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=600&h=900&fit=crop&q=80";
+
+function PickPoster({ src, title }: { src: string; title: string }) {
+  const [loaded, setLoaded] = useState(false);
+  const [errored, setErrored] = useState(false);
+  const finalSrc = errored ? POSTER_FALLBACK : src;
+  return (
+    <>
+      {!loaded && (
+        <div className="absolute inset-0 animate-pulse bg-gradient-to-br from-muted/40 to-muted/10" />
+      )}
+      <img
+        src={finalSrc}
+        alt={title}
+        loading="lazy"
+        onLoad={() => setLoaded(true)}
+        onError={() => {
+          setErrored(true);
+          setLoaded(true);
+        }}
+        className="size-full object-cover aspect-[2/3] transition-transform duration-500 group-hover:scale-110"
+      />
+    </>
   );
 }
