@@ -16,7 +16,6 @@ import {
   tmdbBollywood,
   tmdbDiscover,
   tmdbPosterLookup,
-  tmdbSearch,
   tmdbTopRated,
   tmdbTrending,
 } from "@/lib/tmdb.functions";
