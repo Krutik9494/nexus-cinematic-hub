@@ -2,10 +2,11 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { Search, Sparkles, TrendingUp, Flame } from "lucide-react";
 import heroBg from "@/assets/hero-bg.jpg";
-import { GENRES, MOVIES, POPULAR, TRENDING, type Movie } from "@/lib/movies";
+import { ALL_GENRES, POPULAR, TRENDING, type Movie } from "@/lib/movies";
 import { MovieCard } from "@/components/MovieCard";
 import { MovieModal } from "@/components/MovieModal";
 import { Carousel } from "@/components/Carousel";
+import { ParticleField } from "@/components/ParticleField";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -39,6 +40,7 @@ function Home() {
         <img src={heroBg} alt="" width={1920} height={1024} className="absolute inset-0 size-full object-cover opacity-50" />
         <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/40 to-background" />
         <div className="absolute inset-0 grid-bg opacity-40" />
+        <div className="absolute inset-0"><ParticleField /></div>
 
         <div className="relative max-w-4xl mx-auto px-4 text-center py-20">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass neon-border text-xs uppercase tracking-[0.3em] text-cyan animate-glow-pulse">
@@ -68,7 +70,7 @@ function Home() {
           </div>
 
           <div className="mt-8 flex flex-wrap justify-center gap-2">
-            {GENRES.map((g) => (
+            {ALL_GENRES.map((g) => (
               <button key={g} onClick={() => setGenre(g)}
                 className={`px-4 py-1.5 text-xs rounded-full glass neon-border transition ${genre === g ? "text-cyan glow-cyan" : "text-muted-foreground hover:text-foreground"}`}>
                 {g}
