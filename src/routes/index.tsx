@@ -157,7 +157,15 @@ const MOODS: Mood[] = [
 
 function Home() {
   const [mood, setMood] = useState<Mood>(MOODS[0]);
+  const [picksMood, setPicksMood] = useState<Mood | null>(null);
   const [selected, setSelected] = useState<Movie | null>(null);
+  const picksRef = useRef<HTMLDivElement>(null);
+
+  const handleMoodClick = (m: Mood) => {
+    setMood(m);
+    setPicksMood(m);
+    setTimeout(() => picksRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 80);
+  };
 
   const trendingFn = useServerFn(tmdbTrending);
   const bollywoodFn = useServerFn(tmdbBollywood);
